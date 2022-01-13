@@ -1,7 +1,10 @@
-.pyc
+*.pyc
 __pycache__
-.swp
-.bin
-.fits
-.log
-.tmp
+*.swp
+*.bin
+*.fits
+*.log
+*.tmp
+build
+*.egg-info
+.ci

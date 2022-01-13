@@ -50,7 +50,7 @@ install_requires = [
     'sip',
     'six',
     'configparser',
-    'matplotlib',
+    'matplotlib'
 ] + [ # meqtrees sister packages    
     'purr',
     'astro-kittens',
@@ -70,6 +70,9 @@ setup(name='meqtrees-frontend',
       scripts=scripts,
       data_files=data_files,
       install_requires=install_requires,
+      extra_requires={
+          "venv": ["vext.pyqt4"],
+      },
       long_description=long_description,
       long_description_content_type='text/markdown'
      )
