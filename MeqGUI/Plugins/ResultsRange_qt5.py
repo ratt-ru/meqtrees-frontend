@@ -81,7 +81,7 @@ from qwt.qt.QtGui import (QApplication, QMainWindow, QDialog, QGridLayout,QHBoxL
 from qwt.qt.QtGui import QPen, QColor,QWidget, QImage, qRgba, QFont, QFontInfo, QMenu, QActionGroup, QAction
 from qwt.qt.QtCore import Qt, QSize, QObject, pyqtSignal
 
-from Timba.Plugins.BufferSizeDialog_qt5 import BufferSizeDialog
+from MeqGUI.Plugins.BufferSizeDialog_qt5 import BufferSizeDialog
 
 
 # The ResultsRange class is directly adapted from the Qt/PyQt 

@@ -3,9 +3,10 @@ from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.pixmaps import pixmaps
 from Timba.TDL import TDLOptions
 
 import configparser

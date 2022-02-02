@@ -82,10 +82,10 @@ try:
   from Timba import utils
   from Timba.Meq import meqds
   from Timba.Meq.meqds import mqs
-  from Timba.GUI.pixmaps import pixmaps
-  from Timba.GUI import widgets
-  from Timba.GUI.browsers import *
-  from Timba import Grid
+  from MeqGUI.GUI.pixmaps import pixmaps
+  from MeqGUI.GUI import widgets
+  from MeqGUI.GUI.browsers import *
+  from MeqGUI import Grid
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='quickref_plotter');
   _dprint = _dbg.dprint;

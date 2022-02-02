@@ -29,14 +29,14 @@
 from Timba.dmi import *
 from Timba import utils
 from Timba import dmi_repr
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI import widgets
-from Timba import Grid
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI import widgets
+from MeqGUI import Grid
 from Timba.Meq import meqds
 
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL,ClickableTreeWidget
-from Timba.GUI.widgets import DataDraggableTreeWidget
+from MeqGUI.GUI.widgets import DataDraggableTreeWidget
 
 import sys
 import time
@@ -489,7 +489,7 @@ class HierBrowser (object):
     return item and item.make_data_item();
 
   def get_drag_item_type (self,key):
-    return key in self._tw._content_map and Timba.Grid.DataItem;
+    return key in self._tw._content_map and MeqGUI.Grid.DataItem;
     
   def treeWidget (self):
     return self._tw;

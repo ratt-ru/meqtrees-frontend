@@ -79,10 +79,10 @@ import numpy
 HAS_TIMBA = False
 try:
   from Timba import utils
-  from Timba.GUI import widgets
-  from Timba.Plugins.display_image_qt5 import QwtImageDisplay
-  from Timba.Plugins.QwtColorBar_qt5 import QwtColorBar
-  from Timba.Plugins.ND_Controller_qt5 import ND_Controller
+  from MeqGUI.GUI import widgets
+  from MeqGUI.Plugins.display_image_qt5 import QwtImageDisplay
+  from MeqGUI.Plugins.QwtColorBar_qt5 import QwtColorBar
+  from MeqGUI.Plugins.ND_Controller_qt5 import ND_Controller
 
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='plotting_functions');

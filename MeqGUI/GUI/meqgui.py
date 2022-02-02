@@ -28,9 +28,9 @@
 
 from Timba.dmi import *
 from Timba.Meq import meqds
-from Timba import Grid
-from Timba.GUI import browsers
-from Timba.GUI import app_proxy_gui
+from MeqGUI import Grid
+from MeqGUI.GUI import browsers
+from MeqGUI.GUI import app_proxy_gui
 
 import os
 import Timba.Apps

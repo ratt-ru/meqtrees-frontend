@@ -24,8 +24,8 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-from Timba.GUI import meqgui
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI.GUI import meqgui
+from MeqGUI.GUI.pixmaps import pixmaps
 
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL

@@ -27,12 +27,13 @@
 #
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *
-from Timba import Grid
-from Timba.GUI import browsers
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI import app_proxy_gui
+from MeqGUI import Grid
+from MeqGUI.GUI import browsers
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI import app_proxy_gui
 from Timba.Meq import meqds
 from Timba import TDL
 import Timba.TDL.Settings

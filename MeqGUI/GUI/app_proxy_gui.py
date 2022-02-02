@@ -30,12 +30,12 @@ MainApp = None;
 MainAppThread = None;
 
 from Timba.dmi import *
-from Timba import qt_threading
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI import qt_threading
+from MeqGUI.GUI.pixmaps import pixmaps
 from Timba import dmi_repr
-from Timba import Grid
-from Timba.GUI.browsers import *
-from Timba.GUI.widgets import *
+from MeqGUI import Grid
+from MeqGUI.GUI.browsers import *
+from MeqGUI.GUI.widgets import *
 
 import sys
 import time

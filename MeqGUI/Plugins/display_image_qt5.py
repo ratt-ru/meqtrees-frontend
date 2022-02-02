@@ -92,12 +92,12 @@ from qwt import  QwtLogScaleEngine, QwtLinearScaleEngine
 
 HAS_TIMBA = False
 try:
-  from Timba.GUI.pixmaps import pixmaps
-  from Timba.Plugins.QwtSpy_qt5 import Spy
-  from Timba.Plugins.ComplexScaleDraw_qt5 import ComplexScaleDraw
-  from Timba.Plugins.QwtPlotCurveSizes_qt5 import QwtPlotCurveSizes
-  from Timba.Plugins.QwtPlotImage_qt5 import QwtPlotImage
-  from Timba.Plugins.VellsTree_qt5 import VellsView, VellsElement
+  from MeqGUI.GUI.pixmaps import pixmaps
+  from MeqGUI.Plugins.QwtSpy_qt5 import Spy
+  from MeqGUI.Plugins.ComplexScaleDraw_qt5 import ComplexScaleDraw
+  from MeqGUI.Plugins.QwtPlotCurveSizes_qt5 import QwtPlotCurveSizes
+  from MeqGUI.Plugins.QwtPlotImage_qt5 import QwtPlotImage
+  from MeqGUI.Plugins.VellsTree_qt5 import VellsView, VellsElement
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='displayimage');
   _dprint = _dbg.dprint;

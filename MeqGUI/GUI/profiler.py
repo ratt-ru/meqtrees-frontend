@@ -26,10 +26,10 @@
 
 from Timba.dmi import *
 from Timba.utils import *
-from Timba import Grid 
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI import app_proxy_gui
-from Timba.GUI.treebrowser import StickyTreeWidgetItem
+from MeqGUI import Grid 
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI import app_proxy_gui
+from MeqGUI.GUI.treebrowser import StickyTreeWidgetItem
 from Timba.Meq import meqds
 
 import time

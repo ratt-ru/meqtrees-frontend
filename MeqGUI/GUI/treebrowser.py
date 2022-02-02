@@ -27,16 +27,17 @@
 #
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
-from Timba.GUI.app_proxy_gui import *
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.app_proxy_gui import *
+from MeqGUI.GUI.pixmaps import pixmaps
 from Timba.Meq import meqds
 from Timba.Meq.meqds import mqs
-from Timba.GUI import meqgui
+from MeqGUI.GUI import meqgui
 
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL,ClickableTreeWidget,BusyIndicator
-from Timba.GUI.widgets import DataDraggableTreeWidget
+from MeqGUI.GUI.widgets import DataDraggableTreeWidget
 import Kittens
 
 import weakref
@@ -741,7 +742,7 @@ class TreeBrowser (QObject):
       return meqgui.makeNodeDataItem(node);
       
   def get_drag_item_type (self,key):
-    return Timba.Grid.DataItem;
+    return MeqGUI.Grid.DataItem;
  
   def wtop (self):
     return self._wtop;

@@ -26,8 +26,9 @@
 #
 
 import Timba
-from Timba.GUI import meqgui
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI import Grid, GUI, Plugins
+from MeqGUI.GUI import meqgui
+from MeqGUI.GUI.pixmaps import pixmaps
 
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL

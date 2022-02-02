@@ -25,17 +25,16 @@
 
 __all__ = [ "Cell","CellBlock","Page","Workspace","Services" ];
 
-from Timba.Grid import Services
+from MeqGUI.Grid import Services
 
 from .Services import Floater,addDataItem,removeDataItem,updateDataItem
-from Timba.Grid.Cell import Cell
-from Timba.Grid.CellBlock import CellBlock
-from Timba.Grid.Page import Page
-from Timba.Grid.Workspace import Workspace
+from MeqGUI.Grid.Cell import Cell
+from MeqGUI.Grid.CellBlock import CellBlock
+from MeqGUI.Grid.Page import Page
+from MeqGUI.Grid.Workspace import Workspace
 
-from Timba.Grid.Debug import *
+from MeqGUI.Grid.Debug import *
 
-from Timba.Meq import meqds
 
 
 class Error (RuntimeError):

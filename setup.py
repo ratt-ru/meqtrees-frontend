@@ -1,8 +1,26 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 from distutils.core import setup
 from distutils.command.install import INSTALL_SCHEMES
+
+try:
+    import sip
+    if not hasattr(sip, 'setapi'):
+        raise ImportError("SIP not installed or does not have the setapi attribute")
+except ImportError:
+    print("Cannot import SIP. This is not available from PyPI and has "
+          "to be installed from your distribution streams")
+    sys.exit(1)
+
+try:
+    import PyQt4
+    import PyQt4.Qt
+except ImportError:
+    print("Cannot import PyQt4. This is not available from PyPI and has "
+          "to be installed from your distribution streams")
+    sys.exit(1)
 
 def fullsplit(path, result=None):
     """
@@ -47,10 +65,10 @@ for dirpath, dirnames, filenames in os.walk('MeqGUI'):
 install_requires = [
     'numpy',
     'python-casacore',
-    'sip',
     'six',
     'configparser',
-    'matplotlib'
+    'matplotlib',
+    'PythonQwt'
 ] + [ # meqtrees sister packages    
     'purr',
     'astro-kittens',
@@ -70,9 +88,6 @@ setup(name='meqtrees-frontend',
       scripts=scripts,
       data_files=data_files,
       install_requires=install_requires,
-      extra_requires={
-          "venv": ["vext.pyqt4"],
-      },
       long_description=long_description,
       long_description_content_type='text/markdown'
      )

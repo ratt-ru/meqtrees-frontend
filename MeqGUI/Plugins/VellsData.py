@@ -75,7 +75,7 @@ import sys
 import numpy
 HAS_TIMBA = False
 try:
-  import Timba.Plugins.plotting_functions_qt5 as plot_func
+  import MeqGUI.Plugins.plotting_functions_qt5 as plot_func
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='VellsData');
   _dprint = _dbg.dprint;

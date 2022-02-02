@@ -27,7 +27,12 @@
 #
 
 #ensure we use API 2 from pyqt regardless of python version with python qwt
+import six
+if not six.PY3:
+  raise RuntimeError("Meqtrees has migrated to Python 3.x and no longer supports running Python 2.x")
+
 import sip
+
 sip.setapi('QString', 2)
 sip.setapi('QVariant', 2)
 sip.setapi('QDate', 2)
@@ -121,13 +126,13 @@ if __name__ == "__main__":
 from Timba.Apps import app_defaults
 from Timba.Apps import config
 
-from Timba import qt_threading
+from MeqGUI import qt_threading
 from Timba import octopussy
 from Timba.Apps import meqserver
 
 import Timba.utils
 
-from Timba.GUI import app_proxy_gui
+from MeqGUI.GUI import app_proxy_gui
 app_proxy_gui.mainapp();
 
 # get version numbers
@@ -152,7 +157,7 @@ if False:
   except: pass;
 
 
-def importPlugin (name,location='Timba.Plugins'):
+def importPlugin (name,location='MeqGUI.Plugins'):
   name = location + '.' +name;
   try:
     __import__(name,globals(),locals(),[]);

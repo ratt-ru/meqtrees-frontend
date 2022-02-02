@@ -89,20 +89,20 @@ try:
   from Timba import utils
   from Timba.Meq import meqds
   from Timba.Meq.meqds import mqs
-  from Timba.GUI.pixmaps import pixmaps
-  from Timba.GUI import widgets
-  from Timba.GUI.browsers import *
-  from Timba import Grid
+  from MeqGUI.GUI.pixmaps import pixmaps
+  from MeqGUI.GUI import widgets
+  from MeqGUI.GUI.browsers import *
+  from MeqGUI import Grid
   
-  from Timba.Plugins.display_image_qt5 import QwtImageDisplay
-  from Timba.Plugins.QwtPlotImage_qt5 import QwtPlotImage
-  from Timba.Plugins.QwtColorBar_qt5 import QwtColorBar
-  from Timba.Plugins.SpectrumData import SpectrumData
-  from Timba.Plugins.VellsData import VellsData
-  from Timba.Plugins.SolverData import SolverData
-  from Timba.Plugins.ND_Controller_qt5 import ND_Controller
-  from Timba.Plugins.ResultsRange_qt5 import ResultsRange
-  import Timba.Plugins.plotting_functions_qt5 as plot_func
+  from MeqGUI.Plugins.display_image_qt5 import QwtImageDisplay
+  from MeqGUI.Plugins.QwtPlotImage_qt5 import QwtPlotImage
+  from MeqGUI.Plugins.QwtColorBar_qt5 import QwtColorBar
+  from MeqGUI.Plugins.SpectrumData import SpectrumData
+  from MeqGUI.Plugins.VellsData import VellsData
+  from MeqGUI.Plugins.SolverData import SolverData
+  from MeqGUI.Plugins.ND_Controller_qt5 import ND_Controller
+  from MeqGUI.Plugins.ResultsRange_qt5 import ResultsRange
+  import MeqGUI.Plugins.plotting_functions_qt5 as plot_func
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='result_plotter');
   _dprint = _dbg.dprint;

@@ -27,14 +27,16 @@
 #
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 
 from Timba.dmi import *
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI.widgets import *
-import Timba.Grid 
-from Timba.Grid.Services import *
-from Timba.Grid.Debug import *
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.widgets import *
+import MeqGUI.Grid 
+from MeqGUI.Grid.Services import *
+from MeqGUI.Grid.Debug import *
 from Timba import *
+from MeqGUI import GUI, Plugins, Grid
 
 import re
 import gc
@@ -151,14 +153,14 @@ class CellBlock (object):
     self._cells = self._gw.allocate_cells(nrow=self._nrow,ncol=self._ncol,
                                           udi=self._dataitem.udi,**kwds);
     if not self._cells:
-      raise Timba.Grid.Error("unable to allocate cells");
+      raise MeqGUI.Grid.Error("unable to allocate cells");
     # save new position
     leadcell = self._cells[0];
     self._gridpos = leadcell.grid_position();
     _dprint(2,id(self),': allocated',len(self._cells),'cells at position',self._gridpos);
     # connect signal: remove dataitem when cells are closed
     leadcell.connect(PYSIGNAL("wiped()"),
-      self._currier.xcurry(Timba.Grid.Services.removeDataItem,_args=(self._dataitem,),_argslice=slice(0)));
+      self._currier.xcurry(MeqGUI.Grid.Services.removeDataItem,_args=(self._dataitem,),_argslice=slice(0)));
     # connect signal: float cells
     leadcell.connect(PYSIGNAL("float()"),self.float_cells);
     
@@ -180,23 +182,23 @@ class CellBlock (object):
         cell.set_caption(capt);
                       
   def _display_sub_item (self,dataitem,kwargs):
-    Timba.Grid.Services.addDataItem(dataitem,gw=self._gw,avoid_pos=self._gridpos,**kwargs);
+    MeqGUI.Grid.Services.addDataItem(dataitem,gw=self._gw,avoid_pos=self._gridpos,**kwargs);
         
   def _allocate_float (self):
     """internal helper func: creates a float window when first called.""";
     try: float_window = self._float_window;
     except AttributeError:
-      self._float_window = float_window = Timba.Grid.Floater(self._gw.wtop());
+      self._float_window = float_window = MeqGUI.Grid.Floater(self._gw.wtop());
       QObject.connect(float_window,PYSIGNAL("closed()"),self._unfloat);
       float_window.setWindowTitle(self._dataitem.name);
       # allocate single cell or grid
       if self._totsize == 1: 
         # notitle=True: do not create cell titlebar
-        cell = Timba.Grid.Cell(float_window,(0,0),notitle=True);
+        cell = MeqGUI.Grid.Cell(float_window,(0,0),notitle=True);
         self._float_cells = ( cell, );
         float_window.setCentralWidget(cell.wtop());
       else:
-        self._float_grid = Timba.Grid.Page(self._gw,float_window,self._ncol,self._nrow);
+        self._float_grid = MeqGUI.Grid.Page(self._gw,float_window,self._ncol,self._nrow);
         # allocate grid of fixed cells (fixed means no drop support and 
         # no change of viewer allowed)
         self._float_cells = self._float_grid.allocate_cells(nrow=self._nrow,ncol=self._ncol,
@@ -207,7 +209,7 @@ class CellBlock (object):
     return float_window;
     
   def close (self):
-    Timba.Grid.Services.removeDataItem(self._dataitem);
+    MeqGUI.Grid.Services.removeDataItem(self._dataitem);
     # destroy float, if any
     float_window = getattr(self,'_float_window',None);
     if float_window:

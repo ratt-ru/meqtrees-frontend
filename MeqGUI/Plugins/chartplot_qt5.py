@@ -91,7 +91,7 @@ except:
 
 HAS_TIMBA = False
 try:
-  from Timba.GUI.pixmaps import pixmaps
+  from MeqGUI.GUI.pixmaps import pixmaps
   HAS_TIMBA = True
 except:
   pass

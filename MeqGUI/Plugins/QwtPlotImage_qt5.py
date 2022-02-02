@@ -92,8 +92,8 @@ from qwt import (QwtPlot, QwtPlotMarker, QwtPlotGrid, QwtPlotCurve,
 HAS_TIMBA = False
 
 try:
-  from Timba.Plugins.ImageScaler import ImageScaler
-  from Timba.Plugins.QwtSpy_qt5 import Spy
+  from MeqGUI.Plugins.ImageScaler import ImageScaler
+  from MeqGUI.Plugins.QwtSpy_qt5 import Spy
   from Timba.utils import verbosity
   dbg = verbosity(0,name='QwtPlotImage');
   dprint = _dbg.dprint;

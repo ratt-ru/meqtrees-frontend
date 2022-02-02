@@ -78,7 +78,7 @@ from qwt.qt.QtGui import QApplication, QHBoxLayout, QWidget
 from qwt.qt.QtCore import Qt, pyqtSignal
 from qwt import QwtPlot, QwtPlotCurve
 
-from Timba.Plugins.display_image_qt5 import QwtImageDisplay
+from MeqGUI.Plugins.display_image_qt5 import QwtImageDisplay
 
 #widget to show a zoomed chanel of the plot
 

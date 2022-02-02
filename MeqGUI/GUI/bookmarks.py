@@ -31,9 +31,9 @@ from Timba.utils import *
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL
 
-from Timba import Grid
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI import meqgui
+from MeqGUI import Grid
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI import meqgui
 
 _dbg = verbosity(0,name='bookmarks');
 _dprint = _dbg.dprint;

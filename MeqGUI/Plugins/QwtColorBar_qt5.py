@@ -89,8 +89,8 @@ from qwt import (QwtPlot, QwtPlotMarker, QwtPlotCurve,
 
 HAS_TIMBA = False
 try:
-  from Timba.Plugins.QwtPlotImage_qt5 import QwtPlotImage
-  from Timba.Plugins.QwtSpy_qt5 import Spy
+  from MeqGUI.Plugins.QwtPlotImage_qt5 import QwtPlotImage
+  from MeqGUI.Plugins.QwtSpy_qt5 import Spy
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='QwtColorBar');
   _dprint = _dbg.dprint;

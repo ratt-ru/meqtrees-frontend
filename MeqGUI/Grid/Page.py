@@ -27,11 +27,13 @@
 #
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *
-from Timba.GUI.pixmaps import pixmaps
-from Timba.Grid.Debug import *
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.Grid.Debug import *
 from Timba import *
+from MeqGUI import GUI, Plugins, Grid
 
 import weakref
 import re
@@ -75,7 +77,7 @@ class Page (object):
       self._rows.append(row);
       for icol in range(self.max_nx):
         pos = (self,irow,icol);
-        cell = Timba.Grid.Cell(row,pos,fixed_cell=fixed_cells,page=self);
+        cell = MeqGUI.Grid.Cell(row,pos,fixed_cell=fixed_cells,page=self);
         row._cells.append(cell);
         cell._clear_slot = curry(self._clear_cell,cell);
         QWidget.connect(cell.wtop(),PYSIGNAL("closed()"),cell._clear_slot);
@@ -147,12 +149,12 @@ class Page (object):
     self.updated();
     dataitem.cleanup();
     cell.wipe();
-    Timba.Grid.Services.addDataItem(dataitem,viewer=viewer,
+    MeqGUI.Grid.Services.addDataItem(dataitem,viewer=viewer,
                   gw=self._gw,position=cell.grid_position());
                   
   def drop_cell_item (self,cell,item,event):
     source_cell = getattr(event.source(),'_grid_cell',None);
-    if not isinstance(source_cell,Timba.Grid.Cell):
+    if not isinstance(source_cell,MeqGUI.Grid.Cell):
       source_cell = None;
     our_content = cell.content_dataitem();
     # figure out if we need to swap source/destination cells
@@ -183,7 +185,7 @@ class Page (object):
       cell.wipe();
     # if duplicate cell is selected, create a new data item
     if action is self._qa_dup_cell:
-      item = Timba.Grid.DataItem(item);
+      item = MeqGUI.Grid.DataItem(item);
     # move cell is selected, clear source cell completely
     elif action is self._qa_move_cell:
       if source_cell:
@@ -193,10 +195,10 @@ class Page (object):
       item.cleanup();
       source_cell.wipe();
       source_pos = source_cell.grid_position();
-      Timba.Grid.Services.addDataItem(our_content,
+      MeqGUI.Grid.Services.addDataItem(our_content,
           gw=source_pos[0].gw(),position=source_pos);
     # add content for this cell
-    Timba.Grid.Services.addDataItem(item,gw=self.gw(),position=cell.grid_position());
+    MeqGUI.Grid.Services.addDataItem(item,gw=self.gw(),position=cell.grid_position());
   
   def num_layouts (self):
     return len(self._layouts);

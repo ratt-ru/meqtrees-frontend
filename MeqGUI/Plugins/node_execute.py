@@ -29,15 +29,16 @@ from __future__ import absolute_import
 from __future__ import division
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.Meq import meqds
 from Timba.Meq.meqds import mqs
-from Timba.GUI import browsers
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI.treebrowser import NodeAction
-import Timba.GUI.app_proxy_gui 
-from Timba.GUI.meqserver_gui import makeNodeDataItem
-from Timba import Grid
+from MeqGUI.GUI import browsers
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.treebrowser import NodeAction
+import MeqGUI.GUI.app_proxy_gui 
+from MeqGUI.GUI.meqserver_gui import makeNodeDataItem
+from MeqGUI import Grid
 from Timba.array import *
 from Timba.Meq import meq
 from time import sleep

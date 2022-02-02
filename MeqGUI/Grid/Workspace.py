@@ -27,11 +27,13 @@
 #
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *
-from Timba.GUI.pixmaps import pixmaps
-from Timba.Grid.Debug import *
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.Grid.Debug import *
 from Timba import *
+from MeqGUI import GUI, Plugins, Grid
 
 import weakref
 import re
@@ -46,9 +48,9 @@ from Kittens.widgets import PYSIGNAL
 #
 class Workspace (object):
   # define a toolbutton that accepts drops of DataItems
-  class DataDropButton(Timba.GUI.widgets.DataDroppableWidget(QToolButton)):
+  class DataDropButton(GUI.widgets.DataDroppableWidget(QToolButton)):
     def accept_drop_item_type (self,itemtype):
-      return issubclass(itemtype,Timba.Grid.DataItem);
+      return issubclass(itemtype,Grid.DataItem);
 
   def __init__ (self,parent,max_nx=4,max_ny=4,use_hide=None):
     # dictionary of UDIs -> list of GridDataItem objects
@@ -72,7 +74,7 @@ class Workspace (object):
         tooltip="open new page. You can also drop data items here.",
         class_=self.DataDropButton,
         click=self.add_page);
-    newpage._dropitem = xcurry(Timba.Grid.Services.addDataItem,_argslice=slice(0,1),newpage=True);
+    newpage._dropitem = xcurry(MeqGUI.Grid.Services.addDataItem,_argslice=slice(0,1),newpage=True);
     QWidget.connect(newpage,PYSIGNAL("itemDropped()"),
         newpage._dropitem);
     #------ new panels button
@@ -80,7 +82,7 @@ class Workspace (object):
         tooltip="add more panels to this page. You can also drop data items here.",
         class_=self.DataDropButton,
         click=self._add_more_panels);
-    self._new_panel._dropitem = xcurry(Timba.Grid.Services.addDataItem,_argslice=slice(0,1),newcell=True);
+    self._new_panel._dropitem = xcurry(MeqGUI.Grid.Services.addDataItem,_argslice=slice(0,1),newcell=True);
     QWidget.connect(self._new_panel,PYSIGNAL("itemDropped()"),
         self._new_panel._dropitem);
     #------ align button
@@ -95,7 +97,7 @@ class Workspace (object):
     self.add_page();
 
   def show_message (self,message,error=False,timeout=2000):
-    from Timba.GUI import app_proxy_gui
+    from MeqGUI.GUI import app_proxy_gui
     category = app_proxy_gui.Logger.Error if error else app_proxy_gui.Logger.Normal;
     self.wtop().emit(PYSIGNAL("showMessage"),message,None,category,timeout);
 
@@ -139,7 +141,7 @@ class Workspace (object):
     return self.wtop().isVisible();
 
   def add_page (self,name=None,icon=None):
-    page = Timba.Grid.Page(self,self._maintab,max_nx=self.max_nx,max_ny=self.max_ny);
+    page = MeqGUI.Grid.Page(self,self._maintab,max_nx=self.max_nx,max_ny=self.max_ny);
     wpage = page.wtop();
     wpage._page = page;
     _dprint(2,'name',name,'icon',icon);
@@ -209,7 +211,7 @@ class Workspace (object):
     # is an explicit cell specified?
     if position:
       (page,x,y) = position;
-      if isinstance(page,Timba.Grid.Page):
+      if isinstance(page,MeqGUI.Grid.Page):
         self.set_current_page(page);
       else:  # if page specified, create new one, else use current
         if page:

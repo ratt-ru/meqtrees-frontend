@@ -27,11 +27,12 @@
 #
 
 from Timba.utils import *
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI.widgets import *
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.widgets import *
 from Timba import *
-from Timba.Grid.Debug import *
-import Timba.Grid.Services
+from MeqGUI import GUI, Plugins, Grid
+from MeqGUI.Grid.Debug import *
+import MeqGUI.Grid.Services
 
 import weakref
 import re
@@ -90,7 +91,7 @@ class Cell (object):
       if self._menu:
         self._menu.exec_(ev.globalPos());
     def accept_drop_item_type (self,itemtype):
-      return issubclass(itemtype,Timba.Grid.DataItem);
+      return issubclass(itemtype,MeqGUI.Grid.DataItem);
     def get_cell (self):
       return self._cell;
       
@@ -448,7 +449,7 @@ class Cell (object):
     
   def exclusive_highlight (self):
     if self._dataitem:
-      Timba.Grid.Services.highlightDataItem(self._dataitem);
+      MeqGUI.Grid.Services.highlightDataItem(self._dataitem);
     
   def set_content (self,widget,dataitem=None,leader=None,icon=None,enable_viewers=True):
     """inits cell as a leader cell for a dataitem. Leader cells have

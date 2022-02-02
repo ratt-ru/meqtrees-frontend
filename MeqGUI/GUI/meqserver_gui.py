@@ -27,22 +27,22 @@
 #
 
 from Timba.dmi import *
-from Timba.GUI.app_proxy_gui import *
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.app_proxy_gui import *
+from MeqGUI.GUI.pixmaps import pixmaps
 from Timba.Meq import meqds
-from Timba.GUI.browsers import *
-from Timba.GUI import treebrowser
-import Timba.GUI.TDL as tdlgui
-from Timba.GUI import profiler
-from Timba.GUI.procstatuswidget import *
-from Timba.GUI import meqgui
-from Timba.GUI import bookmarks
-from Timba.GUI import servers_dialog
-from Timba.GUI import about_dialog
-from Timba.GUI import widgets
-from Timba.GUI import VisProgressMeter
-from Timba.GUI import SolverProgressMeter
-from Timba import Grid
+from MeqGUI.GUI.browsers import *
+from MeqGUI.GUI import treebrowser
+import MeqGUI.GUI.TDL as tdlgui
+from MeqGUI.GUI import profiler
+from MeqGUI.GUI.procstatuswidget import *
+from MeqGUI.GUI import meqgui
+from MeqGUI.GUI import bookmarks
+from MeqGUI.GUI import servers_dialog
+from MeqGUI.GUI import about_dialog
+from MeqGUI.GUI import widgets
+from MeqGUI.GUI import VisProgressMeter
+from MeqGUI.GUI import SolverProgressMeter
+from MeqGUI import Grid
 from Timba import TDL
 import Timba.TDL.GUI
 import Purr.MainWindow

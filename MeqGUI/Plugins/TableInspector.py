@@ -27,19 +27,20 @@ from __future__ import absolute_import
 from __future__ import division
 
 import Timba
+from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 
-from Timba.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.pixmaps import pixmaps
 
-from Timba.GUI.treebrowser import NodeAction
-
-
-import Timba.GUI.app_proxy_gui
+from MeqGUI.GUI.treebrowser import NodeAction
 
 
-from Timba import Grid
+import MeqGUI.GUI.app_proxy_gui
 
-from Timba.GUI import browsers
+
+from MeqGUI import Grid
+
+from MeqGUI.GUI import browsers
 
 from Timba.ParmDB import *
 

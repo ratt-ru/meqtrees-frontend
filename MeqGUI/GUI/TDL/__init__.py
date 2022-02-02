@@ -1,9 +1,9 @@
 from PyQt4.Qt import *
 from Kittens.widgets import PYSIGNAL
 
-from Timba.GUI import browsers
-from Timba.GUI.pixmaps import pixmaps
-from Timba import Grid
+from MeqGUI.GUI import browsers
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI import Grid
 
 try:
   from .TDLEditor_qscintilla import TDLEditor

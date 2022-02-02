@@ -29,9 +29,9 @@ from __future__ import division
 from Timba.dmi import *
 from Timba import utils
 from Timba import dmi_repr
-from Timba.GUI.pixmaps import pixmaps
-from Timba import Grid
-from Timba.GUI.browsers import GriddedPlugin,PrecisionPopupMenu
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI import Grid
+from MeqGUI.GUI.browsers import GriddedPlugin,PrecisionPopupMenu
 from qt import *
 from qttable import *
 

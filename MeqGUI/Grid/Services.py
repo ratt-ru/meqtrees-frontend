@@ -28,12 +28,13 @@
 
 from Timba.dmi import *
 from Timba.utils import *
-from Timba.GUI.pixmaps import pixmaps
-from Timba.GUI.widgets import *
-from Timba.Grid.Debug import *
-import Timba.Grid.Cell
-import Timba.Grid.Page
+from MeqGUI.GUI.pixmaps import pixmaps
+from MeqGUI.GUI.widgets import *
+from MeqGUI.Grid.Debug import *
+import MeqGUI.Grid.Cell
+import MeqGUI.Grid.Page
 from Timba import *
+from MeqGUI import GUI, Plugins, Grid
 
 import weakref
 import re
@@ -219,7 +220,7 @@ def addDataItem (item,gw=None,show_gw=True,viewer=None,position=None,avoid_pos=N
   global _dataitems,_current_gw;
   # if position is specified, select workspace from page
   gw = None;
-  if position is not None and isinstance(position[0],Timba.Grid.Page):
+  if position is not None and isinstance(position[0],MeqGUI.Grid.Page):
     gw = position[0].gw();
   item._gridded_workspace = gw = gw or _current_gw;
   if isinstance(viewer,str):

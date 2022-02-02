@@ -86,13 +86,13 @@ try:
   from Timba import utils
   from Timba.Meq import meqds
   from Timba.Meq.meqds import mqs
-  from Timba.GUI.pixmaps import pixmaps
-  from Timba.GUI import widgets
-  from Timba.GUI.browsers import *
-  from Timba import Grid
-  from Timba.Plugins.VellsData import VellsData
-  from Timba.Plugins.ResultsRange_qt5 import ResultsRange
-  from Timba.Plugins.DataDisplayMainWindow_qt5 import DisplayMainWindow
+  from MeqGUI.GUI.pixmaps import pixmaps
+  from MeqGUI.GUI import widgets
+  from MeqGUI.GUI.browsers import *
+  from MeqGUI import Grid
+  from MeqGUI.Plugins.VellsData import VellsData
+  from MeqGUI.Plugins.ResultsRange_qt5 import ResultsRange
+  from MeqGUI.Plugins.DataDisplayMainWindow_qt5 import DisplayMainWindow
 
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='collections_plotter');
