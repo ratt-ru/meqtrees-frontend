@@ -27,6 +27,7 @@
 #
 
 import Timba
+import MeqGUI
 from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *

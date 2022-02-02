@@ -502,7 +502,8 @@ class TreeBrowser (QObject):
     for (name,mod) in list(sys.modules.items()):
       _dprint(4,'looking for treebrowser actions in',name);
       try: 
-        if name.startswith("Timba") and callable(mod.define_treebrowser_actions):
+        if (name.startswith("Timba") or name.startswith("MeqGUI")) and \
+          callable(mod.define_treebrowser_actions):
           _dprint(3,'tb action found in',name,'adding to set');
           funcs.add(mod.define_treebrowser_actions);
       except AttributeError: pass;

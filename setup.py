@@ -22,6 +22,12 @@ except ImportError:
           "to be installed from your distribution streams")
     sys.exit(1)
 
+try:
+    pass
+except ImportError:
+    print("Cannot import qwt. The package is not available from PyPI and has "
+          "to be installed from your distribution streams")
+
 def fullsplit(path, result=None):
     """
     Split a pathname into components (the opposite of os.path.join) in a
@@ -68,7 +74,7 @@ install_requires = [
     'six',
     'configparser',
     'matplotlib',
-    'PythonQwt'
+    'PythonQwt>=0.10.1'
 ] + [ # meqtrees sister packages    
     'purr',
     'astro-kittens',
