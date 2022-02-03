@@ -448,7 +448,7 @@ class meqserver_gui (app_proxy_gui):
     for (name,mod) in list(sys.modules.items()):
       _dprint(4,'looking for mainmenu actions in',name);
       try:
-        if name.startswith("Timba") and callable(mod.define_mainmenu_actions):
+        if (name.startswith("Timba") or name.startswith("MeqGUI")) and callable(mod.define_mainmenu_actions):
           _dprint(3,'mainmenu action found in',name,'adding to set');
           funcs.add(mod.define_mainmenu_actions);
       except AttributeError: pass;
