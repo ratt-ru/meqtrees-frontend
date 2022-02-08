@@ -15,7 +15,7 @@ on:
 jobs:
   deploy:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
     - uses: actions/checkout@v2
@@ -25,6 +25,7 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
+        apt update && apt install python3-sip python3-pyqt4
         python -m pip install --upgrade pip
         pip install build
     - name: Build package
