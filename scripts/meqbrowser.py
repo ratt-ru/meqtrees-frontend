@@ -26,23 +26,6 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-#ensure we use API 2 from pyqt regardless of python version with python qwt
-import six
-if not six.PY3:
-  raise RuntimeError("Meqtrees has migrated to Python 3.x and no longer supports running Python 2.x")
-
-import sip
-
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
-sip.setapi('QDate', 2)
-sip.setapi('QDateTime', 2)
-sip.setapi('QTextStream', 2)
-sip.setapi('QTime', 2)
-sip.setapi('QUrl', 2)
-import os
-os.environ['QT_API'] = 'pyqt' #qt4 not 5 as is installed on most sytems running python 3!
-
 debuglevels = {};
 options = {};
 
@@ -51,10 +34,8 @@ import os
 import sys
 import traceback
 import socket
-import PyQt4.QtCore as QtCore
-QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
-from PyQt4.QtCore import QCoreApplication as qca
-qca.setAttribute(QtCore.Qt.AA_X11InitThreads)
+from qtpy.QtCore import QCoreApplication, Qt
+QCoreApplication.setAttribute(Qt.AA_X11InitThreads)
 
 # these don't like being re-imported in TDL, so try them here
 try:
