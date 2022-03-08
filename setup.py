@@ -6,27 +6,11 @@ from distutils.core import setup
 from distutils.command.install import INSTALL_SCHEMES
 
 try:
-    import sip
-    if not hasattr(sip, 'setapi'):
-        raise ImportError("SIP not installed or does not have the setapi attribute")
+    from qtpy import QtCore
 except ImportError:
-    print("Cannot import SIP. This is not available from PyPI and has "
+    print("Cannot import PyQt. This is not available from PyPI and has "
           "to be installed from your distribution streams")
     sys.exit(1)
-
-try:
-    import PyQt4
-    import PyQt4.Qt
-except ImportError:
-    print("Cannot import PyQt4. This is not available from PyPI and has "
-          "to be installed from your distribution streams")
-    sys.exit(1)
-
-try:
-    pass
-except ImportError:
-    print("Cannot import qwt. The package is not available from PyPI and has "
-          "to be installed from your distribution streams")
 
 def fullsplit(path, result=None):
     """
@@ -74,7 +58,8 @@ install_requires = [
     'six',
     'configparser',
     'matplotlib',
-    'PythonQwt>=0.10.1'
+    'PythonQwt>=0.10.1',
+    'pyqt'
 ] + [ # meqtrees sister packages    
     'purr',
     'astro-kittens',
