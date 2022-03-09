@@ -57,7 +57,6 @@ install_requires = [
     'python-casacore',
     'six',
     'configparser',
-    'matplotlib',
     'PythonQwt>=0.10.1',
     'pyqt'
 ] + [ # meqtrees sister packages    
