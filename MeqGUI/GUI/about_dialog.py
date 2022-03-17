@@ -30,8 +30,10 @@ from MeqGUI import Grid, GUI, Plugins
 from MeqGUI.GUI import meqgui
 from MeqGUI.GUI.pixmaps import pixmaps
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QDialog
+from qtpy.QtCore import QEvent, QObject, Qt, Signal
+from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QHBoxLayout,
+       QSizePolicy, QLabel, QPushButton)
 
 try:
   from Timba.version_info.release import release
@@ -79,7 +81,7 @@ class AboutDialog (QDialog):
           self.pkg_label.setFrameStyle(QFrame.Box|QFrame.Raised);
           lo_pkgs.addWidget(self.pkg_label);
           txt = """<P>Optional packages:</P><TABLE>""";
-          for pkg,(path,version) in Timba.packages().items():
+          for pkg,(path,version) in list(Timba.packages().items()):
             txt += """<TR><TD> %s </TD> <TD> at <tt>%s</tt> </TD> <TD> (%s) </TD></TR>"""%(pkg,path,version);
           txt += "</TABLE>";
           self.pkg_label.setText(txt);
@@ -113,7 +115,7 @@ class AboutDialog (QDialog):
         #self.resize(QSize(489,330).expandedTo(self.minimumSizeHint()))
         # self.clearWState(Qt.WState_Polished)
         
-        self.connect(self.btn_ok,SIGNAL("clicked()"),self.accept)
+        self.btn_ok.clicked.connect(self.accept)
         
     def languageChange(self):
         self.setWindowTitle(self.__tr("About MeqTrees"))
@@ -140,5 +142,5 @@ class AboutDialog (QDialog):
 
 
     def __tr(self,s,c = None):
-        return qApp.translate("ConnectMeqKernel",s,c)
+        return QApplication.translate("ConnectMeqKernel",s,c)
 

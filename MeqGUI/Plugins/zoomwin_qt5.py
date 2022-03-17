@@ -66,16 +66,13 @@
 #
 
 # this is a python translation of the ACSIS c++ zoomwin.cc program
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 import sys
 import numpy
 import numpy
 
-from qwt.qt.QtGui import QApplication, QHBoxLayout, QWidget
-from qwt.qt.QtCore import Qt, pyqtSignal
+from qtpy.QtWidgets import QApplication, QHBoxLayout, QWidget
+from qtpy.QtCore import Qt, Signal
 from qwt import QwtPlot, QwtPlotCurve
 
 from MeqGUI.Plugins.display_image_qt5 import QwtImageDisplay
@@ -84,11 +81,11 @@ from MeqGUI.Plugins.display_image_qt5 import QwtImageDisplay
 
 class ZoomPopup(QWidget):
 
-  winclosed = pyqtSignal(int)
-  winpaused = pyqtSignal(int)
-  save_zoom_display = pyqtSignal(str,int)
-  image_auto_scale = pyqtSignal(int)
-  image_scale_values = pyqtSignal(float, float)
+  winclosed = Signal(int)
+  winpaused = Signal(int)
+  save_zoom_display = Signal(str,int)
+  image_auto_scale = Signal(int)
+  image_scale_values = Signal(float, float)
  
 
   def __init__(self, CurveNumber, x_values, y_values , flags, pen, parent=None, name=None):

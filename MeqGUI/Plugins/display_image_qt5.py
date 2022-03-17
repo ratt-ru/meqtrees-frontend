@@ -67,28 +67,24 @@
 #  Victoria BC V9E 2E7                         Victoria BC V9E 2E7
 #  CANADA                                         CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 import sys
 import random
 import traceback
 import numpy
 import math
+from astropy.io import fits
+from astropy.wcs import WCS
 
-
-
-from qwt.qt.QtGui import (QApplication, QDialog, QGridLayout,QHBoxLayout,QToolTip,QPrinter,QPrintDialog, QFrame,
+from qtpy.QtWidgets import (QApplication, QWidget, QDialog, QGridLayout,QHBoxLayout,QToolTip, QFrame, QMenu, QActionGroup, QAction,
          QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem)
-from qwt.qt.QtGui import QBrush, QPen, QColor,QWidget, QImage, qRgba, QFont, QFontInfo, QMenu, QActionGroup, QAction, QMessageBox, QBrush
-from qwt.qt.QtCore import Qt, QSize, QObject, pyqtSignal, QTimer, QPoint
+from qtpy.QtGui import QBrush, QPen, QColor, QImage, qRgba, QFont, QFontInfo
+from qtpy.QtCore import Qt, QSize, QObject, QTimer, QPoint, Signal
+from qtpy.QtPrintSupport import QPrinter, QPrintDialog
 from qwt import (QwtPlot, QwtPlotMarker, QwtPlotGrid, QwtPlotCurve,QwtPlotRenderer,
                  QwtPlotItem, QwtText, QwtLinearColorMap, QwtSymbol,
                  QwtInterval, QwtScaleMap, QwtScaleDraw, QwtScaleDiv, toQImage)
 from qwt import  QwtLogScaleEngine, QwtLinearScaleEngine
-
-
 
 HAS_TIMBA = False
 try:
@@ -100,8 +96,8 @@ try:
   from MeqGUI.Plugins.VellsTree_qt5 import VellsView, VellsElement
   from Timba.utils import verbosity
   _dbg = verbosity(0,name='displayimage');
-  _dprint = _dbg.dprint;
-  _dprintf = _dbg.dprintf;
+  dprint = _dbg.dprint;
+  dprintf = _dbg.dprintf;
   HAS_TIMBA = True
 except:
   pass
@@ -159,20 +155,20 @@ class QwtImageDisplay(QwtPlot):
         two, selection is employed to display a 2-dimensional
         sub-array on the screen.
     """
-    max_image_range = pyqtSignal('PyQt_PyObject', int, bool,bool)
-    show_colorbar_display = pyqtSignal(int,int)
-    winpaused = pyqtSignal(bool)
-    compare = pyqtSignal(bool)
-    display_type = pyqtSignal(str)
-    colorbar_needed = pyqtSignal(int)
-    save_display = pyqtSignal(str)
-    handle_menu_id = pyqtSignal('PyQt_PyObject')
-    handle_spectrum_menu_id = pyqtSignal(int)
-    show_ND_Controller = pyqtSignal(int)
-    show_3D_Display = pyqtSignal(int)
-    show_results_selector = pyqtSignal(bool)
-    full_vells_image = pyqtSignal(bool)
-    itemAttached =  pyqtSignal('PyQt_PyObject',bool)
+    max_image_range = Signal('PyQt_PyObject', int, bool, bool)
+    show_colorbar_display = Signal(int,int)
+    winpaused = Signal(bool)
+    compare = Signal(bool)
+    display_type = Signal(str)
+    colorbar_needed = Signal(int)
+    save_display = Signal(str)
+    handle_menu_id = Signal('PyQt_PyObject')
+    handle_spectrum_menu_id = Signal(int)
+    show_ND_Controller = Signal(int)
+    show_3D_Display = Signal(int)
+    show_results_selector = Signal(bool)
+    full_vells_image = Signal(bool)
+    itemAttached =  Signal('PyQt_PyObject',bool)
 
     display_table = {
         'hippo': 'hippo',
@@ -335,7 +331,7 @@ class QwtImageDisplay(QwtPlot):
         self.title_font = QFont(QApplication.font())
         fi = QFontInfo(self.title_font);
         # and scale it down to 70%
-        self.title_font.setPointSize(fi.pointSize()*0.7);
+        self.title_font.setPointSize(int(fi.pointSize()*0.7));
         self.xBottom_title = QwtText('Array/Channel Number')
         self.xBottom_title.setFont(self.title_font)
         self.yLeft_title = QwtText('Array/Sequence Number')
@@ -614,7 +610,7 @@ class QwtImageDisplay(QwtPlot):
           self._undo_last_zoom.setVisible(False)
         self.replot()
         #print'called replot in setPlotParms'
-        if HAS_TIMBA:_dprint(3, 'called replot in setPlotParms')
+        if HAS_TIMBA:dprint(3, 'called replot in setPlotParms')
 
     def initSpectrumContextMenu(self):
         """Initialize the spectrum context menu """
@@ -808,7 +804,7 @@ class QwtImageDisplay(QwtPlot):
     def setAxisParms(self, axis_parms):
       self.first_axis_parm = axis_parms[0]
       self.second_axis_parm = axis_parms[1]
-      if HAS_TIMBA:_dprint(3, 'axis parms set to ', self.first_axis_parm, ' ', self.second_axis_parm)
+      if HAS_TIMBA:dprint(3, 'axis parms set to ', self.first_axis_parm, ' ', self.second_axis_parm)
 
     def set_condition_numbers(self, numbers):
       """ set covariance matrix condition numbers """
@@ -1167,7 +1163,7 @@ class QwtImageDisplay(QwtPlot):
     
       if replot:
         self.array_plot(self.complex_image,data_label=self._window_title, flip_axes=False)
-      if HAS_TIMBA:_dprint(3, 'exiting reset_zoom')
+      if HAS_TIMBA:dprint(3, 'exiting reset_zoom')
       return
 
     def handle_toggle_nd_controller(self):
@@ -1439,7 +1435,7 @@ class QwtImageDisplay(QwtPlot):
 
     def setImageRange(self, min, max, colorbar=0,image_lock=False):
       """ callback to set allowable range of array intensity display """
-      if HAS_TIMBA:_dprint(3, 'received request for min and max of ', min, ' ', max)
+      if HAS_TIMBA:dprint(3, 'received request for min and max of ', min, ' ', max)
       if colorbar == 0:
         self.plotImage.setLockImage(True, image_lock)
         self.plotImage.defineImageRange((min, max), True)
@@ -1448,7 +1444,7 @@ class QwtImageDisplay(QwtPlot):
         self.plotImage.defineImageRange((min, max), False)
       self.plotImage.updateImage(self.raw_image)
       self.replot()
-      if HAS_TIMBA:_dprint(3, 'called replot in setImageRange')
+      if HAS_TIMBA:dprint(3, 'called replot in setImageRange')
       #print 'called replot in setImageRange'
     # setImageRange
         
@@ -1461,7 +1457,7 @@ class QwtImageDisplay(QwtPlot):
       else:
         self.handleFlagToggle(self.flag_toggle)
       self.replot()
-      if HAS_TIMBA:_dprint(3, 'called replot in timerEvent_blink')
+      if HAS_TIMBA:dprint(3, 'called replot in timerEvent_blink')
       #print 'called replot in timerEvent_blink'
 
     def update_vells_display(self, menuid):
@@ -1502,7 +1498,7 @@ class QwtImageDisplay(QwtPlot):
         Message = data_label
       else:
         Message = data_label + ' is a scalar\n with value: ' + str(scalar_data)
-      if HAS_TIMBA:_dprint(3,' scalar message ', Message)
+      if HAS_TIMBA:dprint(3,' scalar message ', Message)
       
       text = QwtText(Message)
       text.setColor(Qt.blue)
@@ -1550,7 +1546,7 @@ class QwtImageDisplay(QwtPlot):
       self._toggle_axis_rotate.setVisible(False)
 
       self.replot()
-      if HAS_TIMBA:_dprint(3,'called replot in report_scalar_value')
+      if HAS_TIMBA:dprint(3,'called replot in report_scalar_value')
       self._vells_plot = True
 
     def printplot(self):
@@ -1806,12 +1802,12 @@ class QwtImageDisplay(QwtPlot):
 # draw dividing lines for complex array, cross_sections, solver_offsets, etc
       self.insert_array_info()
       self.replot()
-      if HAS_TIMBA:_dprint(3, 'called replot in refresh_marker_display ')
+      if HAS_TIMBA:dprint(3, 'called replot in refresh_marker_display ')
       #print 'called replot in refresh_marker_display '
     # refresh_marker_display()
 
     def insert_marker_lines(self):
-      if HAS_TIMBA:_dprint(2, 'starting insert_marker_lines')
+      if HAS_TIMBA:dprint(2, 'starting insert_marker_lines')
 # alias
       fn = self.fontInfo().family()
       y = 0
@@ -1900,7 +1896,7 @@ class QwtImageDisplay(QwtPlot):
         xmove = xhb - width
       if xpos - width < xlb:
         xmove = xlb 
-      self._popup_text.move(xmove, ymove)
+      self._popup_text.move(int(xmove), int(ymove))
       if not self._popup_text.isVisible():
         self._popup_text.show()
 
@@ -1958,7 +1954,7 @@ class QwtImageDisplay(QwtPlot):
           if not self.display_solution_distances:
             if self.show_coordinates:
               # adding 40 and 45 pixels seems to give about the right offset
-              location = QPoint(self.xlb+40,self.ylb+45)
+              location = QPoint(int(self.xlb+40),int(self.ylb+45))
               # QToolTip seems to need to be mapped to global coord system
               location = self.mapToGlobal(location)
               QToolTip.showText(location,message);
@@ -1999,7 +1995,7 @@ class QwtImageDisplay(QwtPlot):
 # We are interested in the nearest curve_number and the index, or
 # sequence number of the nearest point in that curve.
                   array_curve_number, xVal, yVal, self.array_index = self.closestCurve(QPoint(self.raw_xpos, self.raw_ypos))
-                  if HAS_TIMBA:_dprint(2,'array_curve_number, xVal, yVal ', array_curve_number, ' ',  xVal, ' ', yVal)
+                  if HAS_TIMBA:dprint(2,'array_curve_number, xVal, yVal ', array_curve_number, ' ',  xVal, ' ', yVal)
                   shape = self.metrics_rank.shape
                   self.metrics_index = 0 
                   if shape[1] > 1:
@@ -2025,7 +2021,7 @@ class QwtImageDisplay(QwtPlot):
 # We are interested in the nearest curve_number and the index, or
 # sequence number of the nearest point in that curve.
                 curve_number, xVal, yVal, self.array_index = self.closestCurve(QPoint(self.raw_xpos, self.raw_ypos))
-                if HAS_TIMBA:_dprint(2,' curve_number, xVal, yVal ', curve_number, ' ', xVal, ' ', yVal );
+                if HAS_TIMBA:dprint(2,' curve_number, xVal, yVal ', curve_number, ' ', xVal, ' ', yVal );
                 message = self.reportCoordinates(xVal, yVal)
                 message = message + ', data point: ' + str(self.array_index)
             else:
@@ -2194,7 +2190,7 @@ class QwtImageDisplay(QwtPlot):
                 self._undo_last_zoom.setVisible(True)
               self.test_plot_array_sizes()
             self.replot()
-            if HAS_TIMBA:_dprint(3, 'called replot in onMouseReleased');
+            if HAS_TIMBA:dprint(3, 'called replot in onMouseReleased');
             #print 'called replot in onMouseReleased'
     # onMouseReleased()
 
@@ -2304,7 +2300,7 @@ class QwtImageDisplay(QwtPlot):
 
     def calculate_cross_sections(self):
         """ calculate and display cross sections at specified location """
-        if HAS_TIMBA:_dprint(3, 'calculating cross-sections')
+        if HAS_TIMBA:dprint(3, 'calculating cross-sections')
         # can't plot cross sections and chi display together
         keys = list(self.chis_plot.keys())
         if len(keys) > 0:
@@ -2313,7 +2309,7 @@ class QwtImageDisplay(QwtPlot):
         self.chis_plot = {}
 
         shape = self.raw_array.shape
-        if HAS_TIMBA:_dprint(3, 'shape is ', shape)
+        if HAS_TIMBA:dprint(3, 'shape is ', shape)
         no_flags = True
         if not self._flags_array is None:
           if self.flag_toggle:
@@ -2335,7 +2331,7 @@ class QwtImageDisplay(QwtPlot):
           self.x_index = numpy.arange(shape[0])
         self.x_index = self.x_index + 0.5
 
-        if HAS_TIMBA:_dprint(3, 'self.xsect_ypos is ', self.xsect_ypos)
+        if HAS_TIMBA:dprint(3, 'self.xsect_ypos is ', self.xsect_ypos)
 #       try:
         x_values = []
         x_index = []
@@ -2380,7 +2376,7 @@ class QwtImageDisplay(QwtPlot):
           self.setAxisScaleEngine(QwtPlot.yRight, QwtLinearScaleEngine())
 
 # create x_index defaults for array plots 
-        if HAS_TIMBA:_dprint(3, 'self.xsect_xpos is ', self.xsect_xpos)
+        if HAS_TIMBA:dprint(3, 'self.xsect_xpos is ', self.xsect_xpos)
         y_values = []
         y_index = []
         for i in range(shape[1]):
@@ -2582,9 +2578,9 @@ class QwtImageDisplay(QwtPlot):
         self.raw_array = image
       self.raw_image = image
 
-      if HAS_TIMBA:_dprint(3, 'self.adjust_color_bar ', self.adjust_color_bar)
+      if HAS_TIMBA:dprint(3, 'self.adjust_color_bar ', self.adjust_color_bar)
       if not self.colorbar_requested:
-        if HAS_TIMBA:_dprint(3, 'emitting colorbar_needed signal')
+        if HAS_TIMBA:dprint(3, 'emitting colorbar_needed signal')
         self.colorbar_needed.emit((1,))
         self.colorbar_requested = True
       
@@ -2606,7 +2602,7 @@ class QwtImageDisplay(QwtPlot):
           x_range = (begin, end)
           self.plotImage.setData(self.raw_image, x_range, self.vells_axis_parms[self.y_parm])
         else:
-          if HAS_TIMBA:_dprint(3, 'calling self.plotImage.setData with self.vells_axis_parms[self.x_parm], self.vells_axis_parms[self.y_parm] ', self.vells_axis_parms[self.x_parm], ' ', self.vells_axis_parms[self.y_parm])
+          if HAS_TIMBA:dprint(3, 'calling self.plotImage.setData with self.vells_axis_parms[self.x_parm], self.vells_axis_parms[self.y_parm] ', self.vells_axis_parms[self.x_parm], ' ', self.vells_axis_parms[self.y_parm])
 
           if self.axes_rotate:
             temp_x_axis_parms = self.vells_axis_parms[self.x_parm]
@@ -2990,8 +2986,8 @@ class QwtImageDisplay(QwtPlot):
     def plot_data(self, visu_record, attribute_list=None, label=''):
       """ process incoming data and attributes into the
           appropriate type of plot """
-      if HAS_TIMBA:_dprint(2, 'in plot data');
-#      if HAS_TIMBA:_dprint(2, 'visu_record ', visu_record)
+      if HAS_TIMBA:dprint(2, 'in plot data');
+#      if HAS_TIMBA:dprint(2, 'visu_record ', visu_record)
 
 # first find out what kind of plot we are making
       self.label = label
@@ -3005,7 +3001,7 @@ class QwtImageDisplay(QwtPlot):
       if attribute_list is None: 
         if 'attrib' in visu_record:
           self._attrib_parms = visu_record['attrib']
-          if HAS_TIMBA:_dprint(2,'self._attrib_parms ', self._attrib_parms);
+          if HAS_TIMBA:dprint(2,'self._attrib_parms ', self._attrib_parms);
           plot_parms = self._attrib_parms.get('plot')
           if 'tag_attrib' in plot_parms:
             temp_parms = plot_parms.get('tag_attrib')
@@ -3052,14 +3048,14 @@ class QwtImageDisplay(QwtPlot):
             if self._string_tag is None:
               self._string_tag = ''
             if isinstance(tag, tuple):
-              if HAS_TIMBA:_dprint(2,'tuple tag ', tag);
+              if HAS_TIMBA:dprint(2,'tuple tag ', tag);
               for i in range(0, len(tag)):
                 if self._string_tag.find(tag[i]) < 0:
                   temp_tag = self._string_tag + ' ' + tag[i]
                   self._string_tag = temp_tag
-              if HAS_TIMBA:_dprint(2,'self._string_tag ', self._string_tag);
+              if HAS_TIMBA:dprint(2,'self._string_tag ', self._string_tag);
             else:
-              if HAS_TIMBA:_dprint(2,'non tuple tag ', tag);
+              if HAS_TIMBA:dprint(2,'non tuple tag ', tag);
               if self._string_tag is None:
                 self._string_tag = ''
               if self._string_tag.find(tag) < 0:
@@ -3068,7 +3064,7 @@ class QwtImageDisplay(QwtPlot):
 
       if 'plot_label' in visu_record:
         self._data_labels = visu_record['plot_label']
-        if HAS_TIMBA:_dprint(2,'insert_array_info: self._data_labels ', self._data_labels);
+        if HAS_TIMBA:dprint(2,'insert_array_info: self._data_labels ', self._data_labels);
       else:
         self._data_labels = ''
 
@@ -3084,7 +3080,7 @@ class QwtImageDisplay(QwtPlot):
         self._data_values = visu_record['value']
 
       if len(self._tag_plot_attrib) > 0:
-        if HAS_TIMBA:_dprint(3, 'self._tag_plot_attrib has keys ', list(self._tag_plot_attrib.keys()))
+        if HAS_TIMBA:dprint(3, 'self._tag_plot_attrib has keys ', list(self._tag_plot_attrib.keys()))
 
 # extract and define labels for this data item
      # now generate  particular plot type
@@ -3106,7 +3102,7 @@ class QwtImageDisplay(QwtPlot):
 
     def setVellsParms(self, vells_axis_parms, axis_labels):
       self.vells_axis_parms = vells_axis_parms
-      if HAS_TIMBA:_dprint(3, 'self.vells_axis_parms = ', self.vells_axis_parms)
+      if HAS_TIMBA:dprint(3, 'self.vells_axis_parms = ', self.vells_axis_parms)
       self.axis_labels = axis_labels
 
     def reset_color_bar(self, reset_value=True):
@@ -3208,7 +3204,7 @@ class QwtImageDisplay(QwtPlot):
       if self.array_flip:
         axes = numpy.arange(incoming_plot_array.ndim)[::-1]
         plot_array = numpy.transpose(incoming_plot_array, axes)
-#       if HAS_TIMBA:_dprint(3, 'transposed plot array ', plot_array, ' has shape ', plot_array.shape)
+#       if HAS_TIMBA:dprint(3, 'transposed plot array ', plot_array, ' has shape ', plot_array.shape)
 
 # figure out type and rank of incoming array
 # for vectors, this is a pain as e.g. (8,) and (8,1) have
@@ -3236,7 +3232,7 @@ class QwtImageDisplay(QwtPlot):
         num_elements = num_elements * plot_array.shape[i]
         if plot_array.shape[i] > 1:
           actual_array_rank = actual_array_rank + 1
-      if HAS_TIMBA:_dprint(3, 'actual array rank ', actual_array_rank)
+      if HAS_TIMBA:dprint(3, 'actual array rank ', actual_array_rank)
       if actual_array_rank <= 1:
         self.is_vector = True;
         self.plotImage.detach()
@@ -3344,7 +3340,7 @@ class QwtImageDisplay(QwtPlot):
           if self.ampl_phase:
             ampl_phase_image = self.convert_to_AP(self.complex_image)
           if self._vells_plot:
-            if HAS_TIMBA:_dprint(3, 'complex type: self._vells_plot ', self._vells_plot)
+            if HAS_TIMBA:dprint(3, 'complex type: self._vells_plot ', self._vells_plot)
             self.x_parm = self.first_axis_parm
             self.y_parm = self.second_axis_parm
             if self.array_flip:
@@ -3395,9 +3391,9 @@ class QwtImageDisplay(QwtPlot):
             self.setAxisScaleDraw(QwtPlot.xBottom, self.myXScale)
 
             self.split_axis = plot_array.shape[0]
-            if HAS_TIMBA:_dprint(3,'testing self.y_marker_step ', self.y_marker_step)
+            if HAS_TIMBA:dprint(3,'testing self.y_marker_step ', self.y_marker_step)
             if not self.y_marker_step is None:
-              if HAS_TIMBA:_dprint(3, 'creating split Y scale for Y axis')
+              if HAS_TIMBA:dprint(3, 'creating split Y scale for Y axis')
               self.myYScale = ComplexScaleDraw(divisor=self.y_marker_step)
               self.setAxisScaleDraw(QwtPlot.yLeft, self.myYScale)
 
@@ -3408,8 +3404,8 @@ class QwtImageDisplay(QwtPlot):
 
         else:
           if self._vells_plot:
-            if HAS_TIMBA:_dprint(3, 'not complex type: self._vells_plot ', self._vells_plot)
-            if HAS_TIMBA:_dprint(3, 'self.vells_axis_parms ',self.vells_axis_parms)
+            if HAS_TIMBA:dprint(3, 'not complex type: self._vells_plot ', self._vells_plot)
+            if HAS_TIMBA:dprint(3, 'self.vells_axis_parms ',self.vells_axis_parms)
             self.x_parm = self.first_axis_parm
             self.y_parm = self.second_axis_parm
             if self.array_flip:
@@ -3419,7 +3415,7 @@ class QwtImageDisplay(QwtPlot):
               temp = self.x_parm
               self.x_parm = self.y_parm
               self.y_parm = temp
-            if HAS_TIMBA:_dprint(3, 'self.x_parm self.y_parm ', self.x_parm, ' ', self.y_parm)
+            if HAS_TIMBA:dprint(3, 'self.x_parm self.y_parm ', self.x_parm, ' ', self.y_parm)
             delta_vells = self.vells_axis_parms[self.x_parm][1] - self.vells_axis_parms[self.x_parm][0]
             self.delta_vells = delta_vells
             self.first_axis_inc = delta_vells // plot_array.shape[0] 
@@ -3454,13 +3450,13 @@ class QwtImageDisplay(QwtPlot):
                 self._y_title = 'Array/Channel Number'
             self.setAxisTitle(QwtPlot.yLeft, self._y_title)
             if not self.y_marker_step is None:
-              if HAS_TIMBA:_dprint(3, 'creating split Y scale for Y axis ', self.y_marker_step)
+              if HAS_TIMBA:dprint(3, 'creating split Y scale for Y axis ', self.y_marker_step)
               self.myYScale = ComplexScaleDraw(divisor=self.y_marker_step)
               self.setAxisScaleDraw(QwtPlot.yLeft, self.myYScale)
           self.display_image(plot_array)
 
       if self.is_vector == True:
-        if HAS_TIMBA:_dprint(3, ' we are plotting a vector')
+        if HAS_TIMBA:dprint(3, ' we are plotting a vector')
 
 # remove any markers and reset curves
         if not self.scalar_display:
@@ -3677,9 +3673,9 @@ class QwtImageDisplay(QwtPlot):
           else:
             self.setAxisScale(QwtPlot.yLeft, self.x_array.min() - axis_diff, self.x_array.max() + axis_add)
           if HAS_TIMBA:
-            _dprint(3, 'plotting complex array with x values ', self.x_index)
-            _dprint(3, 'plotting complex array with real values ', self.x_array)
-            _dprint(3, 'plotting complex array with imag values ', self.y_array)
+            dprint(3, 'plotting complex array with x values ', self.x_index)
+            dprint(3, 'plotting complex array with real values ', self.x_array)
+            dprint(3, 'plotting complex array with imag values ', self.y_array)
 
 # stuff for flags
           if not self._flags_array is None:
@@ -3791,7 +3787,7 @@ class QwtImageDisplay(QwtPlot):
             self.xrCrossSection.setData(self.x_index, self.x_array)
 
         self.replot()
-        if HAS_TIMBA:_dprint(3, 'called replot in array_plot');
+        if HAS_TIMBA:dprint(3, 'called replot in array_plot');
         #print 'called final replot in array_plot'
 
     # array_plot()
@@ -4316,10 +4312,10 @@ class QwtImageDisplay(QwtPlot):
         for i in range(shape[0]):
           vector_array[i,0] = a[i,0]
         if self.index % 2 == 0:
-          if HAS_TIMBA:_dprint(2, 'plotting complex vector with shape ',vector_array.shape);
+          if HAS_TIMBA:dprint(2, 'plotting complex vector with shape ',vector_array.shape);
           self.array_plot(vector_array,data_label='test_vector_complex')
         else:
-          if HAS_TIMBA:_dprint(2, 'plotting complex array with shape ',a.shape);
+          if HAS_TIMBA:dprint(2, 'plotting complex array with shape ',a.shape);
           self.array_plot(a,data_label='test_image_complex')
           self.test_complex = False
       else:
@@ -4332,42 +4328,45 @@ class QwtImageDisplay(QwtPlot):
         for i in range(shape[0]):
           vector_array[i,0] = m[i,0]
         if self.index % 2 == 0:
-          if HAS_TIMBA:_dprint(2, 'plotting real array with shape ',m.shape);
+          if HAS_TIMBA:dprint(2, 'plotting real array with shape ',m.shape);
           self.array_plot(m,data_label='test_image')
         else:
-          if HAS_TIMBA:_dprint(2, 'plotting real vector with shape ', vector_array.shape);
+          if HAS_TIMBA:dprint(2, 'plotting real vector with shape ', vector_array.shape);
           self.array_plot(vector_array,data_label='test_vector')
           self.test_complex = True
 
       self.index = self.index + 1
     # timerEvent()
 
-def make():
+def make(filename):
     demo = QwtImageDisplay()
-    demo.resize(500, 300)
+#   demo.resize(500, 300)
     demo.show()
 # uncomment the following
-    demo.start_test_timer(1000, True, "hippo")
+#   demo.start_test_timer(1000, True, "hippo")
 
 # or
 # uncomment the following lines 
 # (note: you must have the pyfits module installed)
 #   try:
-#     import pyfits
-#     image = pyfits.open('./xntd_diff.fits')
-#     image = pyfits.open('./m51_32.fits')
-#     selector = []
-#     for i in range(len(image[0].data.shape)):
-#       if image[0].data.shape[i] > 1:
-#         axis_slice = slice(0,image[0].data.shape[i])
-#         selector.append(axis_slice)
-#       else:
-#         selector.append(0)
-#     tuple_selector = tuple(selector)
-#     plot_array = image[0].data[tuple_selector]
-#     demo.array_plot(plot_array, data_label='diff')
+    hdu_list = fits.open(filename)
+    print ('info',hdu_list.info())
+    hdu = hdu_list[0]
+    image = hdu.data
+
+    selector = []
+    for i in range(len(image.shape)):
+        if image.shape[i] > 1:
+          axis_slice = slice(0,image.shape[i])
+          selector.append(axis_slice)
+        else:
+          selector.append(0)
+    tuple_selector = tuple(selector)
+    plot_array = image[tuple_selector]
+
+    demo.array_plot(plot_array, data_label='diff')
 #   except:
-#     print 'Exception while importing pyfits module:'
+#     print('Exception while importing astropy fits module:')
 #     traceback.print_exc();
 #     return
 
@@ -4375,8 +4374,12 @@ def make():
     return demo
 
 def main(args):
+    if len(args) <= 1:
+      filename = 'fred.fits'
+    else:
+      filename = args[1]
     app = QApplication(sys.argv)
-    demo = make()
+    demo = make(filename)
     sys.exit(app.exec_())
 
 

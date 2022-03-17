@@ -25,7 +25,7 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-from PyQt4 import Qt
+from qtpy import QtCore as Qt
 import sys
 
 # dummy thread object represents main thread, plus all non-qt threads

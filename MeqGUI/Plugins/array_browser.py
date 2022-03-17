@@ -22,9 +22,6 @@
 # or write to the Free Software Foundation, Inc., 
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 from Timba.dmi import *
 from Timba import utils
@@ -34,6 +31,13 @@ from MeqGUI import Grid
 from MeqGUI.GUI.browsers import GriddedPlugin,PrecisionPopupMenu
 from qt import *
 from qttable import *
+from qtpy.QtGui import QFont
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QTableWidget
+from qtpy.QtGui import QTable
+from qt import *
+from qttable import *
+
 
 _dmirepr = dmi_repr.dmi_repr();
 

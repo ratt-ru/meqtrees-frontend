@@ -27,11 +27,18 @@
 from MeqGUI.GUI import meqgui
 from MeqGUI.GUI.pixmaps import pixmaps
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QApplication, QDialog, QVBoxLayout, QSizePolicy, QLabel,QPushButton
+from qtpy.QtCore import Qt, Signal
 
+try:
+    QString = unicode
+except NameError:
+    # Python 3
+    QString = str
 
 class ConnectMeqKernel(QDialog):
+    startKernel = Signal()
+
     def __init__(self,parent=None,name=None,modal=0,fl=None):
         if fl is None:
           fl = Qt.WType_TopLevel|Qt.WStyle_Customize;
@@ -171,16 +178,16 @@ class ConnectMeqKernel(QDialog):
         #self.resize(QSize(489,330).expandedTo(self.minimumSizeHint()))
         self.clearWState(Qt.WState_Polished)
         
-        self.connect(self.btn_ok,SIGNAL("clicked()"),self.accept)
-        self.connect(self.btn_cancel,SIGNAL("clicked()"),self.reject)
+        self.btn_ok.clicked.connect(self.accept)
+        self.btn_cancel.clicked.connect(self.reject)
         
         ### my additions
-        self.connect(self.btn_start,SIGNAL("toggled(bool)"),lo_start_grp,SLOT("setEnabled(bool)"));
-        self.connect(self.btn_start,SIGNAL("toggled(bool)"),lo_start_grp2,SLOT("setEnabled(bool)"));
-        self.connect(self.btn_remote,SIGNAL("toggled(bool)"),lo_remote_grp,SLOT("setEnabled(bool)"));
-        self.connect(self.start_browse,SIGNAL("clicked()"),self.browse_kernel_dialog);
-        self.connect(self.start_default,SIGNAL("clicked()"),self.reset_default_path);
-        self.connect(self.start_pathname,SIGNAL("textChanged(const QString &)"),self.changed_path);
+        self.btn_start.toggled[bool].connect(lo_start_grp, SLOT("setEnabled(bool)"))
+        self.btn_start.toggled[bool].connect(lo_start_grp2, SLOT("setEnabled(bool)"))
+        self.btn_remote.toggled[bool].connect(lo_remote_grp, SLOT("setEnabled(bool)"))
+        self.start_browse.clicked.connect(self.browse_kernel_dialog)
+        self.start_default.clicked.connect(self.reset_default_path)
+        self.start_pathname.textChanged['QString'].connect(self.changed_path)
 
 
     def languageChange(self):
@@ -209,7 +216,7 @@ class ConnectMeqKernel(QDialog):
 
 
     def __tr(self,s,c = None):
-        return qApp.translate("ConnectMeqKernel",s,c)
+        return QCoreApplication.translate("ConnectMeqKernel",s,c)
 
     ### override the accept method to start kernel as appropriate
     def accept (self):
@@ -218,7 +225,7 @@ class ConnectMeqKernel(QDialog):
         # start kernel
         pathname = str(self.start_pathname.text());
         args = str(self.start_args.text());
-        self.emit(SIGNAL("startKernel"),pathname,args);
+        self.startKernel.emit(pathname, args)
       elif selected is self.btn_remote:
         # not implemented yet
         pass;

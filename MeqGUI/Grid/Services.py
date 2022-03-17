@@ -27,6 +27,7 @@
 #
 
 from Timba.dmi import *
+from PyQt5.QtWidgets import *
 from Timba.utils import *
 from MeqGUI.GUI.pixmaps import pixmaps
 from MeqGUI.GUI.widgets import *
@@ -41,8 +42,9 @@ import re
 import gc
 import types
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QMainWindow
+
 
 _reg_viewers = {};
 _reg_viewers_byname = {};
@@ -96,7 +98,7 @@ def registerViewer (tp,viewer,check_udi=lambda x:True,priority=0):
       # successfully added, or False if this cannot be done.
     vo.cleanup():
       # called when the viewer object is removed from the workspace
-  The viewer object may also issue one Qt signal: PYSIGNAL("refresh()",(udi,)), 
+  The viewer object may also issue one Qt signal: Signal("refresh()",(udi,)), 
   which requests a refresh of the data item given by the udi.
   Note that the GridCell interface already provides a refresh button which does 
   the same on behalf of the viewer.
@@ -169,15 +171,17 @@ def getViewerList (arg,udi=None):
 
 class Floater (QMainWindow):
   """implements a floating window""";
+  closed = Signal()
+
   def __init__ (self,parent):
     QMainWindow.__init__(self,parent,Qt.Dialog);
     self.setWindowIcon(pixmaps.float_window.icon());
 #  def hideEvent (self,ev):
 #    _dprint(0,'hideEvent',ev);
-#    self.emit(SIGNAL("hidden"));
+#    self.emit(Signal("hidden"));
   def closeEvent (self,ev):
     _dprint(2,'closeEvent',ev);
-    self.emit(SIGNAL("closed"));
+    self.closed.emit()
     QMainWindow.closeEvent(self,ev);
     
 #    self.hide();
@@ -271,6 +275,7 @@ def addDataItem (item,gw=None,show_gw=True,viewer=None,position=None,avoid_pos=N
     _dprint(0,'error creating plugin',viewer.__name__);
     traceback.print_exc();
     errstr = '<qt><center><big>Error creating a plug-in of class <b>%s</b> for item <tt>%s</tt>.</big></center>'%(viewer.__name__,item.udi);
+    itemSelected = Signal()
     errstr += '<p><tt>%s</tt>: %s'% \
         (getattr(ev,'_classname',ev.__class__.__name__),getattr(ev,'__doc__',''));
     if hasattr(ev,'args'):
@@ -297,7 +302,7 @@ def removeDataItem (item):
   # remove from highlight list
   if item is _highlighted_item:
     _highlighted_item = None;
-    _current_gw.wtop().emit(SIGNAL("itemSelected"),None,);
+    _current_gw.wtop().itemSelected.emit(None, )
   # remove from item list
   for i in range(len(itemlist)):
     if itemlist[i] is item:
@@ -323,7 +328,7 @@ def highlightDataItem (item):
   _dprint(3,'highlighting',item.udi);
   _highlighted_item = item;  
   item.highlight(True);
-  _current_gw.wtop().emit(SIGNAL("itemSelected"),item,);
+  _current_gw.wtop().itemSelected.emit(item, )
   
 def getHighlightedItem ():
   return _highlighted_item;

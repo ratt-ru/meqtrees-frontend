@@ -26,6 +26,10 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+from qtpy.QtGui import QCursor
+from qtpy.QtCore import QEvent, QObject, Signal, Qt
+from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QHBoxLayout,
+       QSizePolicy, QLabel, QPushButton, QFrame, QListViewItem)
 import Timba
 from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
@@ -39,9 +43,6 @@ from Timba import TDL
 import Timba.TDL.Settings
 import Timba.TDL.Compile
 from Timba.TDL import TDLOptions
-
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
 
 import imp
 import sys
@@ -74,6 +75,20 @@ _MODULE_FILENAME = Timba.utils.extract_stack()[-1][0];
 _MODULE_DIRNAME = os.path.dirname(_MODULE_FILENAME);
 
 class TDLEditor (QFrame,PersistentCurrier):
+  fileClosed = Signal()
+  hidden = Signal()
+  visible = Signal()
+  shown = Signal()
+  importFile = Signal()
+  fileChanged = Signal()
+  compileFile = Signal()
+  textModified = Signal()
+  hasErrors = Signal()
+  fileSaved = Signal()
+  hasCompileOptions = Signal()
+  hasRuntimeOptions = Signal()
+  showEditor = Signal()
+  fileLoaded = Signal()
   SupportsLineNumbers = True;
   SubErrorMarker = 0;
   ErrorMarker = 1;
@@ -117,7 +132,7 @@ class TDLEditor (QFrame,PersistentCurrier):
     jobs.setCaption("TDL Jobs & Runtime Options");
     jobs.setIcon(pixmaps.gear.pm());
     jobs.hide();
-    QObject.connect(self._tb_jobs,SIGNAL("clicked()"),jobs.exec_loop);
+    self._tb_jobs.clicked.connect(jobs.exec_loop)
 
     # save menu and button
     self._tb_save = QToolButton(self._toolbar);
@@ -128,14 +143,14 @@ class TDLEditor (QFrame,PersistentCurrier):
     self._tb_save.setPopupDelay(0);
     self._tb_save._modified_color = QColor("yellow");
     qa_save = QAction(pixmaps.file_save.iconset(),"&Save script",Qt.ALT+Qt.Key_S,self);
-    QObject.connect(qa_save,SIGNAL("activated()"),self._save_file);
-    QObject.connect(self._tb_save,SIGNAL("clicked()"),self._save_file);
+    qa_save.activated.connect(self._save_file)
+    self._tb_save.clicked.connect(self._save_file)
     qa_save.addTo(savemenu);
     qa_save_as = QAction(pixmaps.file_save.iconset(),"Save script &as...",0,self);
-    QObject.connect(qa_save_as,SIGNAL("activated()"),self.curry(self._save_file,save_as=True));
+    qa_save_as.activated.connect(self.curry(self._save_file,save_as=True))
     qa_save_as.addTo(savemenu);
     qa_revert = self._qa_revert = QAction("Revert to saved",0,self);
-    QObject.connect(qa_revert,SIGNAL("activated()"),self._revert_to_saved);
+    qa_revert.activated.connect(self._revert_to_saved)
     qa_revert.addTo(savemenu);
 
     # run menu and button
@@ -147,12 +162,12 @@ class TDLEditor (QFrame,PersistentCurrier):
     self._tb_run.setPopupDelay(0);
     self._qa_runmain = QAction(pixmaps.blue_round_reload.iconset(),
                               "&Save & compile main script",Qt.ALT+Qt.Key_R,self);
-    QObject.connect(self._qa_runmain,SIGNAL("activated()"),self._run_main_file);
-    QObject.connect(self._tb_run,SIGNAL("clicked()"),self._import_main_file);
+    self._qa_runmain.activated.connect(self._run_main_file)
+    self._tb_run.clicked.connect(self._import_main_file)
     self._qa_runmain.addTo(self._tb_runmenu);
     qa_runthis_as = QAction(pixmaps.blue_round_reload.iconset(),"Save & run this script as main script...",0,self);
     qa_runthis_as.setToolTip("Saves and recompiles this script as a top-level TDL script");
-    QObject.connect(qa_runthis_as,SIGNAL("activated()"),self._import_as_main_file);
+    qa_runthis_as.activated.connect(self._import_as_main_file)
     qa_runthis_as.addTo(self._tb_runmenu);
 
     # Compile-time options and menu
@@ -174,13 +189,13 @@ class TDLEditor (QFrame,PersistentCurrier):
             ok_label="Compile",ok_icon=pixmaps.blue_round_reload);
     opts.setCaption("TDL Compile-time Options");
     opts.setIcon(pixmaps.wrench.pm());
-    QObject.connect(opts,PYSIGNAL("accepted()"),self._run_main_file);
+    opts.accepted.connect(self._run_main_file)
     opts.hide();
-    QObject.connect(self._tb_opts,SIGNAL("clicked()"),opts.show);
+    self._tb_opts.clicked.connect(opts.show)
     
     self._qa_recompile = qa_recomp = QAction(pixmaps.blue_round_reload.iconset(),"Re&compile script to apply new options",0,self);
     qa_recomp.setToolTip("You must recompile this script for new options to take effect");
-    QObject.connect(qa_recomp,SIGNAL("activated()"),self._run_main_file);
+    qa_recomp.activated.connect(self._run_main_file)
 
     self._toolbar.addSeparator();
     self._poslabel = QLabel(self._toolbar);
@@ -193,7 +208,7 @@ class TDLEditor (QFrame,PersistentCurrier):
       if not isinstance(close_button,QIconSet):
         close_button = pixmaps.remove.iconset();
       self._qa_close = QAction(close_button,"&Close file",Qt.ALT+Qt.Key_W,self);
-      QObject.connect(self._qa_close,SIGNAL("activated()"),self._file_closed);
+      self._qa_close.activated.connect(self._file_closed)
       self._qa_close.addTo(self._toolbar);
     self._toolbar.setStretchableWidget(self._pathlabel);
 
@@ -214,10 +229,10 @@ class TDLEditor (QFrame,PersistentCurrier):
     self._editor.setMarkerForegroundColor(QColor("red"),self.CurrentErrorMarker);
     self._editor.setMarkerBackgroundColor(QColor("red"),self.CurrentErrorMarker);
     self._editor.setMarginSensitivity(1,True);
-    QObject.connect(self._editor,SIGNAL("marginClicked(int,int,Qt::ButtonState)"),self._process_margin_click);
-    QObject.connect(self._editor,SIGNAL("textChanged()"),self._text_changed);
-    QObject.connect(self._editor,SIGNAL("modificationChanged(bool)"),self._text_modified);
-    QObject.connect(self._editor,SIGNAL("cursorPositionChanged(int,int)"),self._display_cursor_position);
+    self._editor.marginClicked[int, int, Qt.ButtonState].connect(self._process_margin_click)
+    self._editor.textChanged.connect(self._text_changed)
+    self._editor.modificationChanged[bool].connect(self._text_modified)
+    self._editor.cursorPositionChanged[int, int].connect(self._display_cursor_position)
     # QObject.connect(self._editor,SIGNAL("textChanged()"),self._clear_transients);
 
     # add message window
@@ -238,7 +253,7 @@ class TDLEditor (QFrame,PersistentCurrier):
     # self._message_icon.setMargin(4);
     self._message_icon.setAutoRaise(True);
     self._message_icon.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed);
-    QObject.connect(self._message_icon,SIGNAL("clicked()"),self.clear_message);
+    self._message_icon.clicked.connect(self.clear_message)
     QToolTip.add(self._message_icon,"Click here to clear the message");
     self._message_widgets = [];
     self._message_transient = False;
@@ -253,8 +268,8 @@ class TDLEditor (QFrame,PersistentCurrier):
       self._error_window = TDLErrorFloat(parent);
       setattr(parent,'_tdlgui_error_window',self._error_window);
       # self._resize_errwin = True;
-    QObject.connect(self._error_window,PYSIGNAL("hasErrors()"),self._reset_errors);
-    QObject.connect(self._error_window,PYSIGNAL("showError()"),self.show_error);
+    self._error_window.hasErrors.connect(self._reset_errors)
+    self._error_window.showError.connect(self.show_error)
 
     # set filename
     self._filename = None;       # "official" path of file (None if new script not yet saved)
@@ -294,16 +309,16 @@ class TDLEditor (QFrame,PersistentCurrier):
 Warning! You have modified the script since it was last compiled, so the tree may be out of date.""");
   
   def _file_closed (self):
-    self.emit(PYSIGNAL("fileClosed()"),(self,));
+    self.fileClosed.emit((self,))
 
   def hideEvent (self,ev):
-    self.emit(PYSIGNAL("hidden()"),());
-    self.emit(PYSIGNAL("visible()"),(False,));
+    self.hidden.emit()
+    self.visible.emit((False,))
     return QFrame.hideEvent(self,ev);
 
   def showEvent (self,ev):
-    self.emit(PYSIGNAL("shown()"),());
-    self.emit(PYSIGNAL("visible()"),(True,));
+    self.shown.emit()
+    self.visible.emit((True,))
     return QFrame.showEvent(self,ev);
 
   def hide_jobs_menu (self,dum=False):
@@ -350,21 +365,21 @@ Warning! You have modified the script since it was last compiled, so the tree ma
     self.clear_errors();
     if self._mainfile and self._editor.isModified():
       self._save_file();
-    self.emit(PYSIGNAL("importFile()"),(self,self._mainfile or self._filename,));
+    self.importFile.emit((self,self._mainfile or self._filename,))
 
   def _import_as_main_file (self):
     self.clear_errors();
     self._set_mainfile(None);
     self._text_modified(self._editor.isModified());   # to reset labels
-    self.emit(PYSIGNAL("fileChanged()"),(self,));
-    self.emit(PYSIGNAL("importFile()"),(self,self._filename,));
+    self.fileChanged.emit((self,))
+    self.importFile.emit((self,self._filename,))
     
   def _run_main_file (self):
     # self._tb_opts.setOn(False);
     self.clear_errors();
     if self._mainfile and self._editor.isModified():
       self._save_file();
-    self.emit(PYSIGNAL("compileFile()"),(self,self._mainfile or self._filename,));
+    self.compileFile.emit((self,self._mainfile or self._filename,))
 
   def _clear_transients (self):
     """if message box contains a transient message, clears it""";
@@ -381,7 +396,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
 
   def _text_modified (self,mod):
     self._modified = mod;
-    self.emit(PYSIGNAL("textModified()"),(self,bool(mod),));
+    self.textModified.emit((self,bool(mod),))
     if mod:
       self._tb_save.setPaletteBackgroundColor(self._tb_save._modified_color);
     else:
@@ -461,7 +476,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
           else:
             self._editor.markerAdd(line-1,self.ErrorMarker);
           nerr_local += 1;
-    self.emit(PYSIGNAL("hasErrors()"),(self,nerr_local,));
+    self.hasErrors.emit((self,nerr_local,))
 
   def show_error (self,err_num,filename,line,column):
     """Shows error at the given position, but only if the filename matches.
@@ -551,7 +566,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
     self._file_disktime = _file_mod_time(filename);
     self._editor.setModified(False);
     self._text_modified(False);
-    self.emit(PYSIGNAL("fileSaved()"),(self,filename,));
+    self.fileSaved.emit((self,filename,))
     return self._filename;
 
   def close (self):
@@ -627,7 +642,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
     if force or self._tdlmod is None or self._tdlmod_filetime == self._file_disktime:
       # reset data members
       _dprint(2,self._filename,"emitting signal for 0 compile-time options");
-      self.emit(PYSIGNAL("hasCompileOptions()"),(self,0,));
+      self.hasCompileOptions.emit((self,0,))
       self._options_menu.hide();
       self._options_menu.clear();
       self._tdlmod = None;
@@ -663,7 +678,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
           return None;
         # self._tb_opts.show();
         _dprint(2,self._filename,"emitting signal for",len(opts),"compile-time options");
-        self.emit(PYSIGNAL("hasCompileOptions()"),(self,len(opts),));
+        self.hasCompileOptions.emit((self,len(opts),))
     # success, show options or compile
     if show_options and self.has_compile_options():
       self._options_menu.show();
@@ -714,7 +729,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
     if not joblist:
       joblist = [];
       # try to build it from implicit function names
-      for (name,func) in _tdlmod.__dict__.items():
+      for (name,func) in list(_tdlmod.__dict__.items()):
         if name.startswith("_tdl_job_") and callable(func):
           joblist.append(func);
     # does the script define a testing function?
@@ -757,9 +772,9 @@ Warning! You have modified the script since it was last compiled, so the tree ma
           self._jobmenu.addAction(name,
               curry(self.execute_tdl_job,_tdlmod,ns,func,name),
               icon=pixmaps.gear);
-      self.emit(PYSIGNAL("hasRuntimeOptions()"),(self,True));
+      self.hasRuntimeOptions.emit((self,True))
     else:
-      self.emit(PYSIGNAL("hasRuntimeOptions()"),(self,False));
+      self.hasRuntimeOptions.emit((self,False))
       self._tb_jobs.hide();
 
     if joblist:
@@ -798,7 +813,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
       ns.AddError(exc,tb,error_limit=None);
       msg = "TDL job '"+name+"' failed";
       self._error_window.set_errors(ns.GetErrors(),signal=True,message=msg);
-      self.emit(PYSIGNAL("showEditor()"),(self,));
+      self.showEditor.emit((self,))
 
   def get_jobs_popup (self):
     return self._jobmenu;
@@ -856,7 +871,7 @@ Warning! You have modified the script since it was last compiled, so the tree ma
     self._editor.setModified(False);
     self._text_modified(False);
     # emit signals
-    self.emit(PYSIGNAL("fileLoaded()"),(self,filename,));
+    self.fileLoaded.emit((self,filename,))
     # if module is a main-level file (i.e. not slaved to another mainfile),
     # pre-import it so that compile-time menus become available
     self._tdlmod = None;
@@ -880,6 +895,8 @@ Warning! You have modified the script since it was last compiled, so the tree ma
 
 class TDLOptionsDialog (QDialog,PersistentCurrier):
   """implements a floating window for TDL options""";
+  accepted = Signal()
+
   def __init__ (self,parent,ok_label=None,ok_icon=None):
     QDialog.__init__(self,parent,"options",False);
     self.setSizeGripEnabled(True);
@@ -897,12 +914,11 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
     # listview.header().hide();
     # listview.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding);
     # add signals
-    QObject.connect(listview,SIGNAL("clicked(QListViewItem*)"),self._process_listview_click);
-    QObject.connect(listview,SIGNAL("pressed(QListViewItem*)"),self._process_listview_press);
-    QObject.connect(listview,SIGNAL("returnPressed(QListViewItem*)"),self._process_listview_click);
-    QObject.connect(listview,SIGNAL("spacePressed(QListViewItem*)"),self._process_listview_click);
-    QObject.connect(listview,SIGNAL("doubleClicked(QListViewItem*,const QPoint &, int)"),
-                            self._process_listview_click);
+    listview.clicked[QListViewItem].connect(self._process_listview_click)
+    listview.pressed[QListViewItem].connect(self._process_listview_press)
+    listview.returnPressed[QListViewItem].connect(self._process_listview_click)
+    listview.spacePressed[QListViewItem].connect(self._process_listview_click)
+    listview.doubleClicked[QListViewItem, QPoint, int].connect(self._process_listview_click)
     # listview.setMinimumSize(QSize(200,100));
     lo_main.addWidget(listview);
     # set geometry
@@ -917,10 +933,10 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
       else:
         tb = QPushButton(ok_label,self);
       lo_btn.addWidget(tb);
-      QObject.connect(tb,SIGNAL("clicked()"),self.accept);
+      tb.clicked.connect(self.accept)
     # add cancel button
     tb = QPushButton(pixmaps.red_round_cross.iconset(),"Cancel",self);
-    QObject.connect(tb,SIGNAL("clicked()"),self.hide);
+    tb.clicked.connect(self.hide)
     spacer = QSpacerItem(40,20,QSizePolicy.Expanding,QSizePolicy.Minimum);
     lo_btn.addItem(spacer)
     lo_btn.addWidget(tb);
@@ -928,7 +944,7 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
     self.resize(QSize(600,480).expandedTo(self.minimumSizeHint()))
     
   def accept (self):
-    self.emit(PYSIGNAL("accepted()"),());
+    self.accepted.emit()
     self.hide();
     
   def show (self):
@@ -991,6 +1007,9 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
 
 class TDLErrorFloat (QMainWindow,PersistentCurrier):
   """implements a floating window for TDL error reports""";
+  hasErrors = Signal()
+  showError = Signal()
+
   def __init__ (self,parent):
     fl = Qt.WType_TopLevel|Qt.WStyle_Customize;
     fl |= Qt.WStyle_DialogBorder|Qt.WStyle_Title;
@@ -1007,10 +1026,10 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
     # prev/next error buttons
     self._qa_prev_err = QAction(pixmaps.red_leftarrow.iconset(),"Show &previous error",Qt.ALT+Qt.Key_P,self);
     self._qa_prev_err.addTo(errlist_hdr);
-    QObject.connect(self._qa_prev_err,SIGNAL("activated()"),self._show_prev_error);
+    self._qa_prev_err.activated.connect(self._show_prev_error)
     self._qa_next_err = QAction(pixmaps.red_rightarrow.iconset(),"Show &next error",Qt.ALT+Qt.Key_N,self);
     self._qa_next_err.addTo(errlist_hdr);
-    QObject.connect(self._qa_next_err,SIGNAL("activated()"),self._show_next_error);
+    self._qa_next_err.activated.connect(self._show_next_error)
     # label with error count
     self._error_count_label = QLabel(errlist_hdr);
     errlist_hdr.setStretchableWidget(self._error_count_label);
@@ -1018,11 +1037,11 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
     # error list itself
     self._werrlist = QListView(self._werrlist_box);
     self._werrlist.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Preferred);
-    QObject.connect(self._werrlist,SIGNAL("currentChanged(QListViewItem*)"),self.curry(self._process_item_click,"currentChanged"));
-    QObject.connect(self._werrlist,SIGNAL("clicked(QListViewItem*)"),self.curry(self._process_item_click,"clicked"));
-    QObject.connect(self._werrlist,SIGNAL("spacePressed(QListViewItem*)"),self.curry(self._process_item_click,"spacePressed"));
-    QObject.connect(self._werrlist,SIGNAL("returnPressed(QListViewItem*)"),self.curry(self._process_item_click,"returnPressed"));
-    QObject.connect(self._werrlist,SIGNAL("expanded(QListViewItem*)"),self.curry(self._process_item_click,"expanded"));
+    self._werrlist.currentChanged[QListViewItem].connect(self.curry(self._process_item_click,"currentChanged"))
+    self._werrlist.clicked[QListViewItem].connect(self.curry(self._process_item_click,"clicked"))
+    self._werrlist.spacePressed[QListViewItem].connect(self.curry(self._process_item_click,"spacePressed"))
+    self._werrlist.returnPressed[QListViewItem].connect(self.curry(self._process_item_click,"returnPressed"))
+    self._werrlist.expanded[QListViewItem].connect(self.curry(self._process_item_click,"expanded"))
     self._werrlist.addColumn('');
     self._werrlist.addColumn('');
     self._werrlist.addColumn('');
@@ -1211,7 +1230,7 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
       self.setCaption("TDL Errors: %d"%nerr);
       self.show();
       if signal:
-        self.emit(PYSIGNAL("hasErrors()"),(nerr,));
+        self.hasErrors.emit((nerr,))
       if show_item:
         self._show_error_item(self._toplevel_error_items[0]);
       # resize ourselves according to number of errors
@@ -1235,7 +1254,7 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
   def clear_errors (self,signal=True):
     """clears the error list. If signal=True, emits a hasErrors(0) pysignal""";
     if signal:
-      self.emit(PYSIGNAL("hasErrors()"),(0,));
+      self.hasErrors.emit((0,))
     self._error_items = self._toplevel_error_items = None;
     self.setCaption("TDL Errors");
     self._werrlist.clear();
@@ -1260,11 +1279,11 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
         # indicate location
         _dprint(1,"highlighting error in",errloc);
         if signal:
-          self.emit(PYSIGNAL("showError()"),errloc);
+          self.showError.emit(errloc)
         return
     # if we fell through to here, then no error has been shown -- emit appropriate signal
     if signal:
-      self.emit(PYSIGNAL("showError()"),(None,None,None,None));
+      self.showError.emit((None,None,None,None))
 
   def _show_next_error (self):
     item = self._werrlist.currentItem();
@@ -1344,7 +1363,7 @@ class TDLBrowser(browsers.GriddedPlugin):
     self.set_widgets(self.wtop(),dataitem.caption,icon=self.icon());
     if dataitem.data is not None:
       self.set_data(dataitem);
-    QObject.connect(self.wtop(),PYSIGNAL("fontChanged()"),self.wtop().adjust_editor_font);
+    self.wtop().fontChanged.connect(self.wtop().adjust_editor_font)
 
   def wtop (self):
     return self._wedit;

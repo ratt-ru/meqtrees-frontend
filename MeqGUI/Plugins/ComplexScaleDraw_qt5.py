@@ -68,15 +68,16 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 import numpy
 
-from qwt.qt.QtGui import QApplication, QPen
-from qwt.qt.QtCore import Qt
+from qtpy.QtWidgets import QApplication
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QPen
 from qwt import (QwtPlot, QwtPlotMarker, QwtPlotGrid, QwtPlotCurve,
                  QwtScaleMap, QwtScaleDraw, QwtScaleDiv)
 
@@ -236,18 +237,15 @@ def main(args):
     m.setLabelAlignment(Qt.AlignRight | Qt.AlignBottom)
     m.setLinePen(QPen(Qt.black, 2, Qt.SolidLine))
 
-    vector_array = numpy.zeros((100,), numpy.float32)
-    for i in range(100):
-      vector_array[i] = i
-
     curve = QwtPlotCurve('example data')
     curve.attach(demo)
-    x_array = numpy.zeros(100, numpy.float32)
-    y_array = numpy.zeros(100, numpy.float32)
+    x_array = numpy.zeros(100, numpy.float64)
+    y_array = numpy.zeros(100, numpy.float64)
     for i in range(100):
       x_array[i] = 1.0 * i
       y_array[i] = 2.0 * i
     curve.setSamples(x_array,y_array)
+    print('passed curve.setSamples')
 
     demo.resize(600, 400)
     demo.replot()

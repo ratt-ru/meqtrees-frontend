@@ -65,13 +65,12 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
-from qwt.qt.QtGui import QApplication,QHBoxLayout, QLabel, QSizePolicy, QSpacerItem
-from qwt.qt.QtGui import QWidget
-from qwt.qt.QtCore import Qt
+
+
+
+from qtpy.QtWidgets import QApplication,QWidget,QHBoxLayout, QLabel, QSizePolicy, QSpacerItem
+from qtpy.QtCore import Qt
 
 import numpy
 from math import sin

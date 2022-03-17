@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -67,20 +66,17 @@
 #  CANADA					 CANADA
 #
 # This is a python translation of the ACSIS chartplt.cc code
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 
 import sys
 
-from qwt.qt.QtGui import QPen, QBrush, QColor,QWidget, QFont, QFontInfo,QMessageBox
-from qwt.qt.QtGui import QApplication, QHBoxLayout, QFrame, QLabel
-from qwt.qt.QtCore import Qt, QObject, pyqtSignal, QTimer, QPoint
+from qtpy.QtGui import QPen, QBrush, QColor, QFont, QFontInfo
+from qtpy.QtWidgets import QApplication, QHBoxLayout, QFrame, QLabel, QWidget
+from qtpy.QtCore import Qt, QObject, Signal, QTimer, QPoint
 from qwt import QwtPlot, QwtPlotMarker, QwtPlotCurve, QwtText
-
-from .QwtSpy_qt5 import *
-from . import zoomwin_qt5
 
 import random
 import numpy
@@ -91,13 +87,15 @@ except:
 
 HAS_TIMBA = False
 try:
+  from MeqGUI.Plugins.QwtSpy_qt5 import Spy
+  from MeqGUI.Plugins import zoomwin_qt5
   from MeqGUI.GUI.pixmaps import pixmaps
   HAS_TIMBA = True
 except:
   pass
 
 class ChartPlot(QWidget):
-  auto_offset_value = pyqtSignal(float)
+  auto_offset_value = Signal(float)
 
   def __init__(self,control_menu=None,num_curves=None,parent=None,name=None):
     """ Collects information about timing from setup_parameters dict.
@@ -633,7 +631,9 @@ class ChartPlot(QWidget):
     if not self.xzoom_loc is None:
       self.xzoom_loc = [self.press_xpos, self.press_xpos,  self.xpos, self.xpos,self.press_xpos]
       self.yzoom_loc = [self.press_ypos, self.ypos,  self.ypos, self.press_ypos,self.press_ypos]
-      self.zoom_outline.setData(self.xzoom_loc,self.yzoom_loc)
+      #print('self.xzoom_loc.dtype',self.xzoom_loc.dtype)
+      #print('self.yzoom_loc.dtype',self.yzoom_loc.dtype)
+      self.zoom_outline.setData(self.xzoom_loc,self.yzoom_loc.astype(self.xzoom_loc.dtype))
       if self._plotter_is_active: 
         self._plotter.replot()
 
@@ -1165,7 +1165,9 @@ class ChartPlot(QWidget):
               y_plot_values = cplx_chart
 
           if not y_plot_values is None: 
-            self._crv_key[channel].setData(x_plot_values , y_plot_values+temp_off)
+#           print('self.x_plot_values.dtype',self.x_plot_values.dtype)
+#           print('self.y_plot_values.dtype',self.y_plot_values.dtype)
+            self._crv_key[channel].setData(x_plot_values , (y_plot_values+temp_off).astype(x_plot_values.dtype))
             self._crv_key[channel].attach(self._plotter)
             ylb = y_plot_values[0] + temp_off 
         else:
@@ -1186,7 +1188,10 @@ class ChartPlot(QWidget):
               y_plot_values = chart
 
           if not y_plot_values is None: 
-            self._crv_key[channel].setData( x_plot_values , y_plot_values+temp_off)
+#           print('self.x_plot_values.dtype',self.x_plot_values.dtype)
+#           print('self.y_plot_values.dtype',self.y_plot_values.dtype)
+            self._crv_key[channel].setData(x_plot_values , (y_plot_values+temp_off).astype(x_plot_values.dtype))
+#           self._crv_key[channel].setData(x_plot_values , y_plot_values+temp_off)
             self._crv_key[channel].attach(self._plotter)
             ylb = y_plot_values[0] + temp_off 
 

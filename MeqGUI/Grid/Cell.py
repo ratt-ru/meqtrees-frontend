@@ -27,6 +27,8 @@
 #
 
 from Timba.utils import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import *
 from MeqGUI.GUI.pixmaps import pixmaps
 from MeqGUI.GUI.widgets import *
 from Timba import *
@@ -39,9 +41,10 @@ import re
 import gc
 import types
 
-from PyQt4.Qt import *
+from qtpy.QtWidgets import QWidget, QLabel, QSizePolicy
+from qtpy.QtCore import Qt, Signal, QSize, QTimer
+from qtpy.QtGui import QColor, QIcon
 import Kittens
-from Kittens.widgets import PYSIGNAL
 
 # ====== Grid.Cell ==============================================================
 # manages one cell of a gridded workspace
@@ -51,7 +54,7 @@ class Cell (object):
   controls and a title label.
   
   The top-level widget of a cell is available as cell.wtop(). This
-  widget will emit the following PYSIGNALS:
+  widget will emit the following SignalS:
     "clicked()"             : cell has been clicked anywhere
     "float()"               : float of cell is requested
     "flash(bool)"           : cell is flash/unflashing its refresh button  
@@ -66,7 +69,7 @@ class Cell (object):
     "changeViewer(viewer_class)": different viewer selected from "Dispay with" menu
     "itemDropped(item)"     : a dataitem has been dropped on the cell.
                                         
-  In addition, a cell will connect PYSIGNAL("refresh()") from its content
+  In addition, a cell will connect Signal("refresh()") from its content
   widget to the refresh function of its dataitem, if available. Thus cell
   contents may ask to refresh themselves by emitting this signal. Also,
   when the cell's refresh button is clicked, "refresh()" is emitted on behalf
@@ -76,6 +79,10 @@ class Cell (object):
   # displays context menus, has toolbars, etc.
   DataDroppableQWidget = DataDroppableWidget(QWidget);
   class TopLevelWidget (DataDroppableQWidget):
+    clicked = Signal()
+    closed = Signal()
+    changeViewer = Signal()
+
     def __init__ (self,cell,parent):
       Cell.DataDroppableQWidget.__init__(self,parent);
       self._cell = cell;
@@ -83,10 +90,10 @@ class Cell (object):
     def set_context_menu (self,menu):
       self._menu = menu;
     def mousePressEvent (self,ev):
-      self.emit(SIGNAL("clicked"));
+      self.clicked.emit()
       ev.ignore();
     def contextMenuEvent (self,ev):
-      # self.emit(SIGNAL("clicked"));
+      # self.emit(Signal("clicked"));
       ev.accept();
       if self._menu:
         self._menu.exec_(ev.globalPos());
@@ -96,13 +103,23 @@ class Cell (object):
       return self._cell;
       
   class DraggableCellLabel (QLabel):
+    float = Signal()
+    highlight = Signal()
+    refresh = Signal()
+    wiped = Signal()
+    closed = Signal()
+    enable = Signal()
+    fontChanged = Signal()
+    changeViewer = Signal()
+    flash = Signal()
+
     def __init__ (self,cell,*args):
       QLabel.__init__(self,*args);
       self._grid_cell = cell;
       self._pressed = None;
       self._dragtimer = QTimer(self);
       self._dragtimer.setSingleShot(True);
-      QObject.connect(self._dragtimer,SIGNAL("timeout()"),self._timeout);
+      self._dragtimer.timeout.connect(self._timeout)
     # these are standard methods to support drags
     def get_drag_item (self,key):
       return self._grid_cell.content_dataitem();
@@ -250,7 +267,7 @@ class Cell (object):
     QObject.connect(self._wtop,signal,cc);
     
   def _float (self):
-    self.wtop().emit(PYSIGNAL("float()"));
+    self.wtop().float.emit()
     
   def disconnect_all (self):
     self._currier.clear();
@@ -307,11 +324,11 @@ class Cell (object):
     # if we're a leader, grab the focus
     if not self._leader:
       self.wtop().setFocus();
-    self.wtop().emit(SIGNAL("highlight"),enable,);
+    self.wtop().highlight.emit(enable, )
       
   def _dorefresh (self):
     if self._content_widget:
-      self._content_widget.emit(SIGNAL("refresh"));
+      self._content_widget.refresh.emit()
     
   def _clear_content (self):
     if self._content_widget:
@@ -344,12 +361,12 @@ class Cell (object):
     if delete_content:
       self._clear_content();
       _dprint(5,id(self),': emitting wiped() signal');
-      self.wtop().emit(SIGNAL("wiped"));
+      self.wtop().wiped.emit()
     else:
       self._content_widget = None;
     if close:
       _dprint(5,id(self),': emitting closed() signal');
-      self.wtop().emit(SIGNAL("closed"));
+      self.wtop().closed.emit()
     # this is the last step
     self.disconnect_all();
 
@@ -374,7 +391,7 @@ class Cell (object):
       self.wtop().set_context_menu(self._menu);
     else:
       self.wtop().set_context_menu(None);
-    self.wtop().emit(SIGNAL("enable"),enable,);
+    self.wtop().enable.emit(enable, )
     
   def is_enabled (self):
     return self._enabled;
@@ -405,7 +422,7 @@ class Cell (object):
         self._font_qas[sz] = qa = ag.addAction(str(sz));
         qa.setCheckable(True);
         fontmenu.addAction(qa);
-        QObject.connect(qa,SIGNAL("toggled(bool)"),self._menu_currier.curry(self.set_font_size,sz));
+        qa.toggled[bool].connect(self._menu_currier.curry(self.set_font_size,sz))
       self._reset_font_menu(ps);
     if self._enable_viewers and self._viewers_menu:
       menu.addMenu(self._viewers_menu);
@@ -435,8 +452,8 @@ class Cell (object):
     else:
       font.setPixelSize(size);
     self._content_widget.setFont(font);
-    self._content_widget.emit(SIGNAL("fontChanged"),font,);
-    self.wtop().emit(SIGNAL("fontChanged"),font,);
+    self._content_widget.fontChanged.emit(font, )
+    self.wtop().fontChanged.emit(font, )
     self._reset_font_menu(size);
     
   def _reset_font_menu (self,size):
@@ -445,7 +462,7 @@ class Cell (object):
       qa.setChecked(True);
       
   def _change_viewer (self,dataitem,viewer):
-    self.wtop().emit(SIGNAL("changeViewer"),dataitem,viewer);
+    self.wtop().changeViewer.emit(dataitem, viewer)
     
   def exclusive_highlight (self):
     if self._dataitem:
@@ -460,7 +477,7 @@ class Cell (object):
       raise ValueError('content widget must be child of this Grid.Cell');
     _dprint(3,id(self),': setting content');
     # connect a click on the titlebar to highlight ourselves 
-    self.connect(PYSIGNAL("clicked()"),self.exclusive_highlight);
+    self.connect(Signal("clicked()"),self.exclusive_highlight);
     # init cell content
     self.enable_viewers(enable_viewers);
     self._wtop.hide();
@@ -505,7 +522,7 @@ class Cell (object):
       # setup refresh control
       if dataitem.is_mutable():
         self._refresh_func = dataitem.refresh_func;    
-        QWidget.connect(self._content_widget,PYSIGNAL("refresh()"),self._refresh_func);
+        self._content_widget.refresh.connect(self._refresh_func)
         self._refresh.setVisible(True);
       else:
         self._refresh_func = lambda:None;
@@ -532,9 +549,9 @@ class Cell (object):
       # enable cell as per leader
       self.enable(leader.is_enabled());
       # attach leader's signals
-      leader.connect(PYSIGNAL("enable()"),self.enable);
-      leader.connect(PYSIGNAL("highlight()"),self.highlight);
-      leader.connect(PYSIGNAL("closed()"),self.close);
+      leader.connect(Signal("enable()"),self.enable);
+      leader.connect(Signal("highlight()"),self.highlight);
+      leader.connect(Signal("closed()"),self.close);
     self._icon_act.setVisible(True);
     self._label.setEnabled(True);
     # disable cell if no data yet
@@ -561,7 +578,7 @@ class Cell (object):
     
   def flash (self,flash=True):
     _dprint(5,id(self),': flash()');
-    self.wtop().emit(SIGNAL("flash"),flash,);
+    self.wtop().flash.emit(flash, )
     self.enable();
     if flash:
       # self._refresh_btn.setPaletteBackgroundColor(self._flashcolor);

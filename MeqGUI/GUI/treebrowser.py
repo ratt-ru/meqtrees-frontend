@@ -35,8 +35,12 @@ from Timba.Meq import meqds
 from Timba.Meq.meqds import mqs
 from MeqGUI.GUI import meqgui
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL,ClickableTreeWidget,BusyIndicator
+from qtpy.QtWidgets import (QFileDialog, QTreeWidgetItem, QTreeWidget, 
+              QHeaderView, QActionGroup, QToolBar, QDialog)
+from qtpy.QtCore import Signal, QObject, QSize
+from qtpy.QtGui import QBrush, QColor
+
+from Kittens.widgets import ClickableTreeWidget,BusyIndicator
 from MeqGUI.GUI.widgets import DataDraggableTreeWidget
 import Kittens
 
@@ -113,7 +117,7 @@ class TreeBrowser (QObject):
       # subsribe to various events
       node.subscribe_status(self._update_status);
       node.subscribe_state(self._update_state);
-      QObject.connect(node,PYSIGNAL("update_debug()"),self._update_debug);
+      node.update_debug.connect(self._update_debug)
       # default color group is None to use normal colors
       # make sure pixmaps, etc. are updated
       self._update_status(node,node.control_status);
@@ -447,7 +451,12 @@ class TreeBrowser (QObject):
   ######################################################################################################
   # start of TreeBrowser implementation    
   ######################################################################################################
-  def __init__ (self,parent):
+  forestLoaded = Signal()
+  connected = Signal()
+  isRunning = Signal(bool)
+  isStopped = Signal(bool)
+
+  def __init__ (self,parent=None):
     QObject.__init__(self);
     self._parent = weakref.proxy(parent);
     # ---------------------- construct GUI
@@ -457,12 +466,13 @@ class TreeBrowser (QObject):
     tw.setRootIsDecorated(True);
     tw.setIndentation(12);
     # tw.setSorting(-1);
-    tw.header().setResizeMode(QHeaderView.Interactive);
+# BH_FIX_ME
+#   tw.header().setResizeMode(QHeaderView.Interactive);
     tw.setFocus();
-    QObject.connect(tw,SIGNAL('itemExpanded(QTreeWidgetItem*)'),self._expand_node);
-    QObject.connect(tw,PYSIGNAL('mouseButtonClicked()'),self._item_clicked);
-    QObject.connect(tw,PYSIGNAL('itemContextMenuRequested()'),self._show_context_menu);
-    QObject.connect(tw,SIGNAL('currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)'),self._set_recent_item);
+    tw.itemExpanded[QTreeWidgetItem].connect(self._expand_node)
+    tw.mouseButtonClicked.connect(self._item_clicked)
+    tw.itemContextMenuRequested.connect(self._show_context_menu)
+    tw.currentItemChanged[QTreeWidgetItem, QTreeWidgetItem].connect(self._set_recent_item)
     # setup columns
     tw.header().setDefaultAlignment(Qt.AlignRight);
     tw.setColumnCount(8);
@@ -538,9 +548,9 @@ class TreeBrowser (QObject):
         action.setEnabled(False);
         have_sep = False;
     # ---------------------- connect to meqds forest list
-    QObject.connect(meqds.nodelist,PYSIGNAL("cleared()"),self.clear);
-    QObject.connect(meqds.nodelist,PYSIGNAL("loaded()"),self.update_nodelist);
-    QObject.connect(meqds.nodelist,PYSIGNAL("requested()"),self._requested_nodelist);
+    meqds.nodelist.cleared.connect(self.clear)
+    meqds.nodelist.loaded.connect(self.update_nodelist)
+    meqds.nodelist.requested.connect(self._requested_nodelist)
 
     # ---------------------- other internal state
     self._forest_breakpoint = 0;
@@ -631,7 +641,7 @@ class TreeBrowser (QObject):
     # resort
     self._tw.sortItems(0,Qt.AscendingOrder);
     # emit signal
-    self.emit(SIGNAL("forestLoaded"));
+    self.forestLoaded.emit()
       
   def _requested_nodelist (self):
     _dprint(2,"nodelist requested");
@@ -665,7 +675,8 @@ class TreeBrowser (QObject):
     caption and self._tw_headeritem.setText(icol,caption);
     # self._tw.header().setMinimumSectionSize(icol,width);
     self._column_map[colname] = (icol,width);
-    self._tw.header().setResizeMode(icol,QHeaderView.ResizeToContents);
+#   BH_FIX_ME
+#   self._tw.header().setResizeMode(icol,QHeaderView.ResizeToContents);
     return icol;
     
   def icolumn (self,colname):
@@ -752,7 +763,7 @@ class TreeBrowser (QObject):
     return self._toolbar;
     
   def connected (self,conn,auto_request=True):
-    self.emit(SIGNAL("connected"),conn,);
+    self.connected.emit(conn, )
     self.is_connected = conn;
     if conn is True:
       self._update_all_controls();
@@ -778,8 +789,8 @@ class TreeBrowser (QObject):
     self._mpi_num_proc = getattr(fst,'mpi_num_proc',1);
     self.show_column("proc",self._mpi_num_proc>1);
     self._forest_breakpoint = fst.breakpoint;
-    self.wtop().emit(SIGNAL("isRunning"),self.is_running,);
-    self.wtop().emit(SIGNAL("isStopped"),self.is_stopped,);
+    self.wtop().isRunning.emit(self.is_running, )
+    self.wtop().isStopped.emit(self.is_stopped, )
     # if just stopped in the tree debugger, make sure all stopped nodes
     # are visible
     _dprint(5,"was stopped",was_stopped,"is stopped",self.is_stopped);
@@ -949,7 +960,7 @@ class TreeBrowser (QObject):
 
   def add_action (self,action,order=1000,where="toolbar",callback=None):
     if callback:
-      QObject.connect(action,SIGNAL("triggered(bool)"),callback);
+      action.triggered[bool].connect(callback)
     self._actions.setdefault(where,[]).append((order,action));
     
   def add_separator (self,order=1000,where="toolbar"):
@@ -1097,7 +1108,7 @@ def define_treebrowser_actions (tb):
   dbg_verbosity = tb._qa_dbg_verbosity = QActionGroup(parent);
   dbg_verbosity.setExclusive(True);
   # dbg_verbosity.setUsesDropDown(True);
-  QObject.connect(dbg_verbosity,SIGNAL("triggered(QAction*)"),tb._debug_set_verbosity_slot);
+  dbg_verbosity.triggered[QAction].connect(tb._debug_set_verbosity_slot)
   # dbg_verbosity.setToolTip("""This changes debug verbosity levels""");
   tb._qa_dbg_verbosities = [];
   for level,pm,text in \
@@ -1118,7 +1129,7 @@ def define_treebrowser_actions (tb):
   bp_on_fail.setToolTip("This enables or disables a global breakpoint on any node returning a FAIL result");
   bp_on_fail._is_visible = lambda tb=tb: tb.is_connected;
   bp_on_fail._is_enabled = lambda tb=tb: tb.is_connected;
-  QObject.connect(bp_on_fail,SIGNAL("triggered(bool)"),tb._debug_bp_on_fail);
+  bp_on_fail.triggered[bool].connect(tb._debug_bp_on_fail)
   tb.add_action(bp_on_fail,65);
   tb.add_separator(66);
   # Pause
@@ -1134,15 +1145,15 @@ def define_treebrowser_actions (tb):
   dbgcont  = QAction(pixmaps.right_2triangles.icon(),"&Continue",ag_debug);
   dbgcont.setShortcut(Qt.Key_F6+Qt.SHIFT);
   tb.add_action(dbgcont,90);
-  QObject.connect(dbgcont,SIGNAL("triggered()"),tb._debug_continue);
+  dbgcont.triggered.connect(tb._debug_continue)
   dbgstep  = QAction(pixmaps.down_triangle.icon(),"&Step",ag_debug);      
   dbgstep.setShortcut(Qt.Key_F7);
   tb.add_action(dbgstep,91);
-  QObject.connect(dbgstep,SIGNAL("triggered()"),tb._debug_single_step);
+  dbgstep.triggered.connect(tb._debug_single_step)
   dbgnext  = QAction(pixmaps.down_2triangles.icon(),"Step to &next node",ag_debug);      
   dbgnext.setShortcut(Qt.Key_F8);
   tb.add_action(dbgnext,92);
-  QObject.connect(dbgnext,SIGNAL("triggered()"),tb._debug_next_node);
+  dbgnext.triggered.connect(tb._debug_next_node)
   for qa in ag_debug.actions():
     qa._is_visible = lambda tb=tb: tb.is_connected;
     qa._is_enabled = lambda tb=tb: tb.is_loaded and tb.is_stopped;
@@ -1151,7 +1162,7 @@ def define_treebrowser_actions (tb):
   tb.add_stretch(1000);
   show_help = QAction(pixmaps.info_blue_round.icon(),"Show icon &reference...",parent);
   show_help.setShortcut(Qt.CTRL+Qt.Key_F1);
-  QObject.connect(show_help,SIGNAL("triggered()"),tb.show_icon_reference);
+  show_help.triggered.connect(tb.show_icon_reference)
   show_help._is_enabled = lambda tb=tb:True;
   tb.add_action(show_help,1010);
   tb.add_action(show_help,5,where="node");
@@ -1256,3 +1267,50 @@ class NA_ContinueUntil (NodeAction):
     self.tb._debug_until_node(node);
   def is_enabled (self,node):
     return self.tb.is_running;
+
+TIME_LIMIT = 20
+
+class Actions(QDialog):
+    """
+    Simple dialog that consists of a Progress Bar and a Button.
+    Clicking on the button results in the start of a timer and
+    updates the progress bar.
+    """
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        
+    def initUI(self):
+        self.setWindowTitle('Progress Bar')
+        self.progress = TreeBrowser(self)
+        self.button = QPushButton('Start', self)
+        self.button.move(0, 30)
+        self.show()
+
+        self.button.clicked.connect(self.onButtonClick)
+
+    def onButtonClick(self):
+        count = 0
+        while count < TIME_LIMIT:
+            count += 1
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = Actions()
+    sys.exit(app.exec_())
+
+
+#def main(args):
+#  app = QApplication(sys.argv)
+# print('app initialized')
+#  demo = TreeBrowser()
+# print('demo initialized')
+#  demo._show()
+# print('demo showing')
+#  app.exec_()
+
+
+# Admire
+#if __name__ == '__main__':
+#    main(sys.argv)
+

@@ -33,12 +33,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
-from qt import *
+
+from qtpy.QtWidgets import (QWidget,QApplication, QGroupBox, QDialog, QLineEdit, QGridLayout,QHBoxLayout, QVBoxLayout, QTabWidget, QLabel)
+
 import sys
+
+try:
+    QString = str
+except NameError:
+    # Python 3
+    QString = str
 
 class dialog_window_config(QDialog):
     def __init__(self,parent = None,name = None, mother=None, modal = 0,fl = 0):
@@ -317,19 +322,19 @@ class dialog_window_config(QDialog):
         self.resize(QSize(544,303).expandedTo(self.minimumSizeHint()))
         self.clearWState(Qt.WState_Polished)
 
-        self.connect(self.check_box_y_auto_scale,SIGNAL("toggled(bool)"),self.line_edit_y_max.setDisabled)
-        self.connect(self.check_box_y_auto_scale,SIGNAL("toggled(bool)"),self.line_edit_y_min.setDisabled)
-        self.connect(self.check_box_y_auto_scale,SIGNAL("toggled(bool)"),self.text_label_y_min.setDisabled)
-        self.connect(self.check_box_y_auto_scale,SIGNAL("toggled(bool)"),self.text_label_y_max.setDisabled)
-        self.connect(self.check_box_x_auto_scale,SIGNAL("toggled(bool)"),self.line_edit_x_max.setDisabled)
-        self.connect(self.check_box_x_auto_scale,SIGNAL("toggled(bool)"),self.line_edit_x_min.setDisabled)
-        self.connect(self.check_box_x_auto_scale,SIGNAL("toggled(bool)"),self.text_label_x_max.setDisabled)
-        self.connect(self.check_box_x_auto_scale,SIGNAL("toggled(bool)"),self.text_label_x_min.setDisabled)
-        self.connect(self.buttonCancel,SIGNAL("clicked()"),self.reject)
-        self.connect(self.buttonOk,SIGNAL("clicked()"),self.accept)
-        self.connect(self.check_box_ratio,SIGNAL("toggled(bool)"),self.line_edit_ratio.setEnabled)
-        self.connect(self.check_box_x_grid_maj_enable,SIGNAL("toggled(bool)"),self.check_box_x_grid_min_enable.setEnabled)
-        self.connect(self.check_box_y_grid_maj_enable,SIGNAL("toggled(bool)"),self.check_box_y_grid_min_enable.setEnabled)
+        self.check_box_y_auto_scale.toggled[bool].connect(self.line_edit_y_max.setDisabled)
+        self.check_box_y_auto_scale.toggled[bool].connect(self.line_edit_y_min.setDisabled)
+        self.check_box_y_auto_scale.toggled[bool].connect(self.text_label_y_min.setDisabled)
+        self.check_box_y_auto_scale.toggled[bool].connect(self.text_label_y_max.setDisabled)
+        self.check_box_x_auto_scale.toggled[bool].connect(self.line_edit_x_max.setDisabled)
+        self.check_box_x_auto_scale.toggled[bool].connect(self.line_edit_x_min.setDisabled)
+        self.check_box_x_auto_scale.toggled[bool].connect(self.text_label_x_max.setDisabled)
+        self.check_box_x_auto_scale.toggled[bool].connect(self.text_label_x_min.setDisabled)
+        self.buttonCancel.clicked.connect(self.reject)
+        self.buttonOk.clicked.connect(self.accept)
+        self.check_box_ratio.toggled[bool].connect(self.line_edit_ratio.setEnabled)
+        self.check_box_x_grid_maj_enable.toggled[bool].connect(self.check_box_x_grid_min_enable.setEnabled)
+        self.check_box_y_grid_maj_enable.toggled[bool].connect(self.check_box_y_grid_min_enable.setEnabled)
 
         self.setTabOrder(self.line_edit_window_title,self.line_edit_x_axis_label)
         self.setTabOrder(self.line_edit_x_axis_label,self.line_edit_y_axis_label)
@@ -412,7 +417,7 @@ class dialog_window_config(QDialog):
      QDialog.accept(self)
      
     def __tr(self,s,c = None):
-        return qApp.translate("dialog_window_config",s,c)
+        return QApplication.translate("dialog_window_config",s,c)
 
 
 def main(args):

@@ -22,18 +22,13 @@
 # or write to the Free Software Foundation, Inc., 
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 import Timba
+from PyQt5.QtWidgets import *
 from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
-
 from MeqGUI.GUI.pixmaps import pixmaps
-
 from MeqGUI.GUI.treebrowser import NodeAction
-
 
 import MeqGUI.GUI.app_proxy_gui
 
@@ -48,6 +43,12 @@ from qt import *
 from qttable import *
 import os
 
+
+try:
+    QString = unicode
+except NameError:
+    # Python 3
+    QString = str
 
 _dbg = verbosity(0,name='TableInspector');
 _dprint = _dbg.dprint;
@@ -82,7 +83,7 @@ class TableInspector(browsers.GriddedPlugin):
         self._name_edit = QLineEdit(self._tabbox,"test");
         self._browse_button = QPushButton(self._tabbox);
         self._browse_button.setText("Browse...");
-        QObject.connect(self._browse_button,SIGNAL("clicked()"),self._browse);
+        self._browse_button.clicked.connect(self._browse)
 
         #domain buttons menu
         self._axesbox = QVBox(self._mainvbox);
@@ -98,9 +99,9 @@ class TableInspector(browsers.GriddedPlugin):
             
         #self._buttonbox = QHBox(self._mainvbox);
         #self._add_button = QPushButton("Add Axis",self._buttonbox);
-        #QObject.connect(self._add_button, SIGNAL('clicked()'), self._add_axis)
+        #QObject.connect(self._add_button, Signal('clicked()'), self._add_axis)
         #self._remove_button = QPushButton("Remove Axis",self._buttonbox);
-        #QObject.connect(self._remove_button, SIGNAL('clicked()'), self._remove_axis)
+        #QObject.connect(self._remove_button, Signal('clicked()'), self._remove_axis)
         #extra buttons menu
         self._buttonbox2 = QVBox(self._mainvbox);
 
@@ -118,7 +119,7 @@ class TableInspector(browsers.GriddedPlugin):
         self.parmtable.setColumnWidth(0,200);
         self.parmtable.setColumnWidth(1,150);
 
-        QObject.connect(self.parmtable,SIGNAL("selectionChanged()"),self._get_selected);
+        self.parmtable.selectionChanged.connect(self._get_selected)
 
 
         self._parm_button = QPushButton(self._parmbox);
@@ -127,14 +128,14 @@ class TableInspector(browsers.GriddedPlugin):
         self._parmlist = [];
         self._funklist = {};
         self._Comp_funklet={};
-        QObject.connect(self._parm_button,SIGNAL("clicked()"),self._get_parms);
+        self._parm_button.clicked.connect(self._get_parms)
 
         self._domain = meq.domain(0,1,0,1);
         
         self._plot_button = QPushButton(self._parmbox);
         self._plot_button.setText("Plot Selection");
 
-        QObject.connect(self._plot_button,SIGNAL("clicked()"),self._plot_parms);
+        self._plot_button.clicked.connect(self._plot_parms)
        
 
         caption = "Inspect Table";

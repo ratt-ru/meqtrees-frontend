@@ -25,11 +25,12 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+import sys
 from Timba.dmi import *
 from Timba.utils import *
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtCore import QObject, Signal
+from qtpy.QtWidgets import QApplication, QMenu
 
 from MeqGUI import Grid
 from MeqGUI.GUI.pixmaps import pixmaps
@@ -40,9 +41,12 @@ _dprint = _dbg.dprint;
 _dprintf = _dbg.dprintf;
 
 class Bookmark (QObject):
-  def __init__ (self,name,udi,parent,viewer=None):
+  updated = Signal()
+  showBookmark = Signal()
+
+  def __init__ (self,name=None,udi=None,parent=None,viewer=None):
     QObject.__init__(self,parent);
-    QObject.connect(self,PYSIGNAL("updated()"),parent,PYSIGNAL("updated()"));
+    self.updated.connect(parent.updated)
     self.name = name;
     self.rec = record(name=name,udi=udi);
     # resolve viewer to actual viewer class (or None if none specified),
@@ -67,24 +71,29 @@ class Bookmark (QObject):
         self.icon = QIcon;
         self.enabled = False;
   def show(self,**kws):
-    self.parent().emit(SIGNAL("showBookmark"),self.rec.udi,self.rec.viewer);
+    self.parent().showBookmark.emit(self.rec.udi, self.rec.viewer)
 
 class Pagemark (QObject):
+  showPagemark = Signal()
+  updated = Signal()
   icon = pixmaps.bookmark_toolbar.icon;
   enabled = True;
   def __init__ (self,name,page,parent):
     QObject.__init__(self,parent);
-    QObject.connect(self,PYSIGNAL("updated()"),parent,PYSIGNAL("updated()"));
+    self.updated.connect(parent.updated)
     self.name = name;
     self.page = page;
     self.rec = record(name=name,page=page);
   def show (self,**kws):
-    self.parent().emit(SIGNAL("showPagemark"),self,);
+    self.parent().showPagemark.emit(self, )
 
 class BookmarkFolder (QObject):
+  updated = Signal()
+  showBookmark = Signal()
+  showPagemark = Signal()
   icon = pixmaps.bookmark_folder.icon;
   enabled = True;
-  def __init__ (self,name,parent,menu=None,load=None,gui_parent=None):
+  def __init__ (self,name=None,parent=None,menu=None,load=None,gui_parent=None):
     """Creates a folder of bookmarks, and the associated menu.
     If 'menu' is not None, bookmarks will be added to the supplied menu, else a new one will be created.
     If load is set to a list (of bookmarks records), folder will be loaded.
@@ -104,8 +113,8 @@ class BookmarkFolder (QObject):
       self._have_initial_menu = False;
     if load is not None:
       self.load(load);
-    QObject.connect(self,PYSIGNAL("showBookmark()"),self.parent(),PYSIGNAL("showBookmark()"));
-    QObject.connect(self,PYSIGNAL("showPagemark()"),self.parent(),PYSIGNAL("showPagemark()"));
+    self.showBookmark.connect(self.parent().showBookmark)
+    self.showPagemark.connect(self.parent().showPagemark)
     
   def load (self,bklist):
     """loads bookmarks from list""";
@@ -155,7 +164,7 @@ class BookmarkFolder (QObject):
       qa.setEnabled(False);
     self._qas.append(qa);
     if not quiet:
-      self.emit(SIGNAL("updated"));
+      self.updated.emit()
     return item;
     
   def add (self,name,udi,viewer=None):
@@ -180,3 +189,15 @@ class BookmarkFolder (QObject):
     count = len([item for item in self._bklist if isinstance(item,Pagemark)]);
     return "Page " + str(count+1);
     
+def main(args):
+  app = QApplication(sys.argv)
+  demo = Bookmark(parent=app)
+  print('demo initialized')
+  demo.show()
+  app.exec_()
+
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+

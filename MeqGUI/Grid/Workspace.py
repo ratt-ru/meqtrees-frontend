@@ -41,8 +41,9 @@ import re
 import gc
 import types
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QHBoxLayout, QToolButton, QTabWidget, QWidget
+from qtpy.QtCore import Qt, Signal
+from qtpy.QtGui import QIcon
 
 # ====== Grid.Workspace ======================================================
 # implements a multi-page, multi-panel viewing grid
@@ -50,6 +51,9 @@ from Kittens.widgets import PYSIGNAL
 class Workspace (object):
   # define a toolbutton that accepts drops of DataItems
   class DataDropButton(GUI.widgets.DataDroppableWidget(QToolButton)):
+    showMessage = Signal()
+    shown = Signal()
+
     def accept_drop_item_type (self,itemtype):
       return issubclass(itemtype,Grid.DataItem);
 
@@ -65,7 +69,7 @@ class Workspace (object):
 
     self._maintab = QTabWidget(parent);
     self._maintab.setTabPosition(QTabWidget.North);
-    QWidget.connect(self._maintab,SIGNAL("currentChanged(int)"),self._set_layout_button);
+    self._maintab.currentChanged[int].connect(self._set_layout_button)
     self.max_nx = max_nx;
     self.max_ny = max_ny;
     # set of parents for corners of the maintab (added on demand when GUI is built)
@@ -76,16 +80,14 @@ class Workspace (object):
         class_=self.DataDropButton,
         click=self.add_page);
     newpage._dropitem = xcurry(MeqGUI.Grid.Services.addDataItem,_argslice=slice(0,1),newpage=True);
-    QWidget.connect(newpage,PYSIGNAL("itemDropped()"),
-        newpage._dropitem);
+    newpage.itemDropped.connect(newpage._dropitem)
     #------ new panels button
     self._new_panel = self.add_tool_button(Qt.TopLeftCorner,pixmaps.view_right.icon(),
         tooltip="add more panels to this page. You can also drop data items here.",
         class_=self.DataDropButton,
         click=self._add_more_panels);
     self._new_panel._dropitem = xcurry(MeqGUI.Grid.Services.addDataItem,_argslice=slice(0,1),newcell=True);
-    QWidget.connect(self._new_panel,PYSIGNAL("itemDropped()"),
-        self._new_panel._dropitem);
+    self._new_panel.itemDropped.connect(self._new_panel._dropitem)
     #------ align button
     self.add_tool_button(Qt.TopLeftCorner,pixmaps.view_split.icon(),
         tooltip="align panels on this page",
@@ -100,7 +102,7 @@ class Workspace (object):
   def show_message (self,message,error=False,timeout=2000):
     from MeqGUI.GUI import app_proxy_gui
     category = app_proxy_gui.Logger.Error if error else app_proxy_gui.Logger.Normal;
-    self.wtop().emit(PYSIGNAL("showMessage"),message,None,category,timeout);
+    self.wtop().showMessage.emit(message, None, category, timeout)
 
   # adds a tool button to one of the corners of the workspace viewer
   def add_tool_button (self,corner,icon,tooltip=None,click=None,
@@ -110,7 +112,8 @@ class Workspace (object):
     if not layout:
       parent = QWidget(self._maintab);
       self._tb_corners[corner] = layout = QHBoxLayout(parent);
-      layout.setMargin(2);
+# BH_FIX_ME
+#     layout.setMargin(2);
       self._maintab.setCornerWidget(parent,corner);
     # add button
     button = class_(layout.parentWidget());
@@ -124,7 +127,7 @@ class Workspace (object):
     if tooltip:
       button.setToolTip(tooltip);
     if callable(click):
-      QWidget.connect(button,SIGNAL("clicked()"),click);
+      button.clicked.connect(click)
     return button;
 
   def wtop (self):
@@ -132,11 +135,11 @@ class Workspace (object):
 
   def show (self,shown=True):
     self.wtop().setShown(shown);
-    self.wtop().emit(SIGNAL("shown"),shown,);
+    self.wtop().shown.emit(shown, )
 
   def hide (self):
     self.wtop().hide();
-    self.wtop().emit(SIGNAL("shown"),False,);
+    self.wtop().shown.emit(False, )
 
   def isVisible (self):
     return self.wtop().isVisible();
@@ -159,11 +162,15 @@ class Workspace (object):
     _dprint(2,'addTab:',name,icon);
     self._maintab.addTab(wpage,icon,name);
     self._maintab.setCurrentIndex(index);
-    QWidget.connect(wpage,PYSIGNAL("layoutChanged()"),self._set_layout_button);
+# python 3 issues here
+# BH_FIX_ME
+#   wpage.layoutChanged.connect(self._set_layout_button)
     wpage._change_icon = curry(self._maintab.setTabIcon,index);
-    QWidget.connect(wpage,PYSIGNAL("setIcon()"),wpage._change_icon);
+# BH_FIX_ME
+#   wpage.setIcon.connect(wpage._change_icon)
     wpage._rename = curry(self._maintab.setTabText,index);
-    QWidget.connect(wpage,PYSIGNAL("setName()"),wpage._rename);
+# BH_FIX_ME
+#   wpage.setName.connect(wpage._rename)
     return page;
 
   def remove_current_page (self):

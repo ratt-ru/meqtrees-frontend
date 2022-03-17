@@ -67,9 +67,9 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 import numpy
@@ -189,7 +189,8 @@ class ImageScaler:
     if self.d_cnv == 0.0:
        return 0.0;
     else:
-       temp_array = self.d_x1 + ((y - self.d_y1) / self.d_cnv).astype(numpy.float64) 
+#      temp_array = self.d_x1 + ((y - self.d_y1) / self.d_cnv).astype(numpy.float64) 
+       temp_array = self.d_x1 + ((y - self.d_y1) / self.d_cnv).astype(numpy.float32) 
        if self.d_log: 
            return numpy.exp(temp_array)
        else:

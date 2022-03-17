@@ -34,22 +34,30 @@ from Timba.utils import *
 from MeqGUI.GUI.pixmaps import pixmaps
 from MeqGUI.Grid.Debug import *
 from Timba import *
-from MeqGUI import GUI, Plugins, Grid
 
 import weakref
 import re
 import gc
 import types
 
-from PyQt4.Qt import *
+from qtpy.QtWidgets import QSplitter
+from qtpy.QtCore import Signal, Qt, QObject
+from qtpy.QtGui import QIcon
+
 import Kittens.widgets
-from Kittens.widgets import PYSIGNAL
     
 # ====== Grid.Page ===========================================================
 # manages one page of a gridded workspace
 #
-class Page (object):
+class Page (QObject):
+  layoutChanged = Signal(int, int, int, int)
+
   class GridRow (QSplitter):
+    layoutChanged = Signal(int, int, int, int)
+    setIcon = Signal('PyQt_PyObject')
+    setName = Signal('PyQt_PyObject')
+    updated = Signal()
+
     def __init__(self,parent):
       QSplitter.__init__(self,Qt.Horizontal,parent);
       self._cells = [];
@@ -81,14 +89,13 @@ class Page (object):
         cell = MeqGUI.Grid.Cell(row,pos,fixed_cell=fixed_cells,page=self);
         row._cells.append(cell);
         cell._clear_slot = curry(self._clear_cell,cell);
-        QWidget.connect(cell.wtop(),PYSIGNAL("closed()"),cell._clear_slot);
+        cell.wtop().closed.connect(cell._clear_slot)
         cell._drop_slot = curry(self.drop_cell_item,cell);
-        QWidget.connect(cell.wtop(),PYSIGNAL("itemDropped()"),
-                        cell._drop_slot);
+        cell.wtop().itemDropped.connect(cell._drop_slot)
         cell._cv_slot = curry(self.change_viewer,cell);                
-        QWidget.connect(cell.wtop(),PYSIGNAL("changeViewer()"),cell._cv_slot);
+        cell.wtop().changeViewer.connect(cell._cv_slot)
         # cell._display_slot = curry(self._display_data_item,parent=weakref.ref(cell));
-        # QWidget.connect(cell.wtop(),PYSIGNAL("displayDataItem()"),
+        # QWidget.connect(cell.wtop(),Signal("displayDataItem()"),
         #                cell._display_slot);
     # prepare layout
     self.set_layout(0);
@@ -97,7 +104,9 @@ class Page (object):
     _dprint(2,icon);
     self._icon = icon or QIcon();
     self._icon_cou = clear_on_update;
-    self.wtop().emit(SIGNAL("setIcon"),self._icon,);
+# not sure what to do here with python 3
+# BH_FIX_ME
+#   self.wtop().setIcon.emit(self._icon, )
     
   def clear_icon (self):
     self.set_icon(None);
@@ -113,7 +122,9 @@ class Page (object):
     self._pagename = name;
     if auto:
       self._autoname = name;
-    self.wtop().emit(SIGNAL("setName"),name,);
+# not sure what to do hare with python 3
+# BH_FIX_ME
+#   self.wtop().setName.emit(name, )
   
   def get_name (self):
     return self._pagename;
@@ -144,7 +155,10 @@ class Page (object):
     self._frag_tag = None;
     if self._icon_cou:
       self.clear_icon();
-    self.wtop().emit(SIGNAL("updated"));
+# not sure what to do about following in python 3
+# BH_FIX_ME
+#   self.wtop().updated.emit()
+#   self.updated.emit()
     
   def change_viewer (self,cell,dataitem,viewer):
     self.updated();
@@ -244,7 +258,9 @@ class Page (object):
       row.hide();
     self.align_layout();
     # emit signal for change of layout
-    self.wtop().emit(SIGNAL("layoutChanged"),nlo,len(self._layouts),nrow,ncol);
+# Not isure what to do here with python 3
+# BH_FIX_ME
+#   self.wtop().layoutChanged.emit(nlo, len(self._layouts), nrow, ncol)
     return self._cur_layout;
     
   # increments current layout scheme by one (i.e. adds more windows)

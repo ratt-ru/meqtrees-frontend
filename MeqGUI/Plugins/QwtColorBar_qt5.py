@@ -70,18 +70,18 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 from math import log
 from math import exp
 from math import pi
 import numpy
 
-from qwt.qt.QtGui import QApplication, QSizePolicy, QMessageBox
-from qwt.qt.QtGui import QPen, QColor,QWidget, QImage, QFont, QFontInfo, QMenu, QActionGroup, QAction
-from qwt.qt.QtCore import Qt, pyqtSignal, QSize, QObject
+from qtpy.QtWidgets import QApplication, QWidget, QSizePolicy, QMessageBox, QMenu, QAction
+from qtpy.QtGui import QPen, QColor,QImage, QFont, QFontInfo 
+from qtpy.QtCore import Qt, Signal, QSize, QObject
 from qwt import (QwtPlot, QwtPlotMarker, QwtPlotCurve,
                  QwtPlotItem, QwtLinearColorMap,
                  QwtLogScaleEngine, QwtLinearScaleEngine,
@@ -120,7 +120,7 @@ class QwtColorBar(QwtPlot):
         'unlock colorbar scale': 202,
         }
 
-    set_image_range = pyqtSignal(int,int,int,int)
+    set_image_range = Signal(int,int,int,int)
 
     def __init__(self, colorbar_number=0, parent=None):
         QwtPlot.__init__(self, parent)

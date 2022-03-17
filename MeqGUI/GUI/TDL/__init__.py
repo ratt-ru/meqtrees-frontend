@@ -1,5 +1,4 @@
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtCore import QEvent, QObject, Signal, Qt
 
 from MeqGUI.GUI import browsers
 from MeqGUI.GUI.pixmaps import pixmaps
@@ -43,7 +42,7 @@ class TDLBrowser(browsers.GriddedPlugin):
     self.set_widgets(self.wtop(),dataitem.caption,icon=self.icon());
     if dataitem.data is not None:
       self.set_data(dataitem);
-    QObject.connect(self.wtop(),PYSIGNAL("fontChanged()"),self.wtop().adjust_editor_font);
+    QObject.connect(self.wtop(),Signal("fontChanged()"),self.wtop().adjust_editor_font);
 
   def wtop (self):
     return self._wedit;

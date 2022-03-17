@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
-
 import Timba
 from MeqGUI import Grid, GUI, Plugins
 from Timba.dmi import *
 from Timba.utils import *
 from MeqGUI.GUI.pixmaps import pixmaps
 from Timba.TDL import TDLOptions
+
+from qtpy.QtCore import QObject, Signal
+from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QHBoxLayout,
+       QSizePolicy, QLabel, QPushButton)
+
 
 import configparser
 
@@ -25,6 +27,9 @@ ColumnValue = 2;
 
 class TDLOptionsDialog (QDialog,PersistentCurrier):
   """implements a floating window for TDL options""";
+  refreshProfiles = Signal()
+  accepted = Signal()
+
   def __init__ (self,parent,ok_label=None,ok_icon=None):
     QDialog.__init__(self,parent);
     self.setSizeGripEnabled(True);
@@ -42,14 +47,14 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
     self._tw.header().setResizeMode(ColumnValue,QHeaderView.Stretch);
     self._tw.header().resizeSection(ColumnValue,300);
     self._tw.header().hide();
-    QObject.connect(self._tw.header(),SIGNAL("sectionResized(int,int,int)"),self._resize_dialog);
+    self._tw.header().sectionResized[int, int, int].connect(self._resize_dialog)
     self._allow_resize_dialog = True;
     # self._tw.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.MinimumExpanding);
     # add signals
-    QObject.connect(self._tw,SIGNAL("itemClicked(QTreeWidgetItem*,int)"),self._process_treewidget_click);
-    QObject.connect(self._tw,SIGNAL("itemActivated(QTreeWidgetItem*,int)"),self._process_treewidget_press);
+    self._tw.itemClicked[QTreeWidgetItem, int].connect(self._process_treewidget_click)
+    self._tw.itemActivated[QTreeWidgetItem, int].connect(self._process_treewidget_press)
     # this is emitted when a job button is puhysed in the treewidget -- hide ourselves when this happens
-    QObject.connect(self._tw,PYSIGNAL("closeWindow()"),self.hide);
+    self._tw.closeWindow.connect(self.hide)
     # self._tw.setMinimumSize(QSize(200,100));
     lo_main.addWidget(self._tw);
     # set geometry
@@ -64,7 +69,7 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
       else:
         self.wok = QPushButton(ok_label,self);
       lo_btn.addWidget(self.wok);
-      QObject.connect(self.wok,SIGNAL("clicked()"),self.accept);
+      self.wok.clicked.connect(self.accept)
     else:
       self.wok = None;
     # addspacer
@@ -94,13 +99,13 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
     lo_btn.addWidget(self.wsave);
     # create the New profile action for the save menu
     self._qa_newprof = QAction("New profile...",self);
-    QObject.connect(self._qa_newprof,SIGNAL("triggered()"),self._save_new_profile);
+    self._qa_newprof.triggered.connect(self._save_new_profile)
     # load profile configuration
     self.refresh_profiles();
-    QObject.connect(self,PYSIGNAL("refreshProfiles()"),self.refresh_profiles);
+    self.refreshProfiles.connect(self.refresh_profiles)
     # add cancel button
     tb = QPushButton(pixmaps.red_round_cross.icon(),"Cancel",self);
-    QObject.connect(tb,SIGNAL("clicked()"),self.hide);
+    tb.clicked.connect(self.hide)
     spacer = QSpacerItem(40,20,QSizePolicy.Expanding,QSizePolicy.Minimum);
     lo_btn.addItem(spacer)
     lo_btn.addWidget(tb);
@@ -172,7 +177,7 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
       QMessageBox.warning(self,"Error saving profile","""<P>There was an error writing to the %s file,
                            profile was not saved.</P>"""%PROFILE_FILE);
     if newprof:
-      self.emit(PYSIGNAL("refreshProfiles()"));
+      self.refreshProfiles.emit()
 
   def _save_new_profile (self):
     default_name = os.path.splitext(os.path.basename(TDLOptions.current_scriptname))[0] + ":";
@@ -185,7 +190,7 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
       self.adjustSizes();
 
   def accept (self):
-    self.emit(PYSIGNAL("accepted()"));
+    self.accepted.emit()
     self.hide();
 
 #  def show (self):
@@ -214,8 +219,8 @@ class TDLOptionsDialog (QDialog,PersistentCurrier):
       button.setIcon(icon.icon());
     self._tw.setItemWidget(item,0,button);
     button._on_click = callback;
-    QObject.connect(button,SIGNAL("clicked()"),button._on_click);
-    QObject.connect(button,SIGNAL("clicked()"),self.hide);
+    button.clicked.connect(button._on_click)
+    button.clicked.connect(self.hide)
 
   def _process_treewidget_click (self,item,col,*dum):
     """helper function to process a click on a treeWidget item. Meant to be connected

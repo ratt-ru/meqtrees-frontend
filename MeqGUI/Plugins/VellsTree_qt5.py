@@ -65,14 +65,14 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 
-from qwt.qt.QtGui import QTreeWidget, QTreeWidgetItem, QApplication, QWidget
-from qwt.qt.QtCore import Qt, QObject, pyqtSignal
+from qtpy.QtWidgets import QTreeWidget, QTreeWidgetItem, QApplication, QWidget
+from qtpy.QtCore import QObject, Signal
 
 
 # some simple classes to create a tree-like structure for viewing and 
@@ -108,7 +108,7 @@ class VellsView(QTreeWidget) :
   """
   inherits from QListView so that we can get keys from VellsElements
   """
-  selected_vells_id = pyqtSignal()
+  selected_vells_id = Signal()
 
   def __init__( self, parent=None, name=None):
     QTreeWidget.__init__( self, parent)

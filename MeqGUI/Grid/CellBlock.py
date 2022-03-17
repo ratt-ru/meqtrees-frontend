@@ -42,8 +42,7 @@ import re
 import gc
 import types
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtCore import Qt, QSize, QObject, Signal
 
 class CellBlock (object):
   """A Grid.CellBlock represents a block of grid cells (1x1 by default) used
@@ -142,7 +141,7 @@ class CellBlock (object):
     self._init_cells(self._cells,enable_viewers=enable_viewers);
     # connect displayDataItem() signal from contents 
     for w in widgets:
-      QWidget.connect(w,PYSIGNAL("displayDataItem()"),self._display_sub_item);
+      w.displayDataItem.connect(self._display_sub_item)
     
   def _allocate_grid (self,**kwds):
     """Allocates self._cells: a grid of cells from a workspace.
@@ -159,10 +158,10 @@ class CellBlock (object):
     self._gridpos = leadcell.grid_position();
     _dprint(2,id(self),': allocated',len(self._cells),'cells at position',self._gridpos);
     # connect signal: remove dataitem when cells are closed
-    leadcell.connect(PYSIGNAL("wiped()"),
+    leadcell.connect(Signal("wiped()"),
       self._currier.xcurry(MeqGUI.Grid.Services.removeDataItem,_args=(self._dataitem,),_argslice=slice(0)));
     # connect signal: float cells
-    leadcell.connect(PYSIGNAL("float()"),self.float_cells);
+    leadcell.connect(Signal("float()"),self.float_cells);
     
   def _init_cells (self,cells,enable_viewers=True):
     """initializes cells with captions and dataitem.""";
@@ -189,7 +188,7 @@ class CellBlock (object):
     try: float_window = self._float_window;
     except AttributeError:
       self._float_window = float_window = MeqGUI.Grid.Floater(self._gw.wtop());
-      QObject.connect(float_window,PYSIGNAL("closed()"),self._unfloat);
+      float_window.closed.connect(self._unfloat)
       float_window.setWindowTitle(self._dataitem.name);
       # allocate single cell or grid
       if self._totsize == 1: 
@@ -205,7 +204,7 @@ class CellBlock (object):
                             fixed_cells=True);
         float_window.setCentralWidget(self._float_grid.wtop());
     # connect signal: remove dataitem when cells are closed
-    self._float_cells[0].connect(PYSIGNAL("closed()"),self.close);
+    self._float_cells[0].connect(Signal("closed()"),self.close);
     return float_window;
     
   def close (self):

@@ -24,9 +24,7 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
-
+from qtpy.QtCore import Signal
 from Timba.utils import verbosity
 
 _dbg = verbosity(0,name='widgets');
@@ -41,6 +39,8 @@ _dprintf = _dbg.dprintf;
 #
 def DataDroppableWidget (parent_class):
   class widgetclass (parent_class):
+    itemDropped = Signal()
+
     def __init__ (self,*args):
       parent_class.__init__(self,*args);
       self.setAcceptDrops(True);
@@ -133,7 +133,7 @@ def DataDroppableWidget (parent_class):
     def process_drop_item (self,item,event):
       """This function is called when a drop occurs.
       Default action is to emit an itemDropped() signal.""";
-      self.emit(SIGNAL("itemDropped"),item,event);
+      self.itemDropped.emit(item, event)
       
   return widgetclass;
 

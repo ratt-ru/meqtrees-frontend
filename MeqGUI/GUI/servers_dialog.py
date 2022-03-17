@@ -25,16 +25,29 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
+import sys
 from MeqGUI.GUI import meqgui
+from PyQt5.QtWidgets import *
 from MeqGUI.GUI.pixmaps import pixmaps
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QDialog
+from qtpy.QtCore import QEvent, QSize, QObject, Signal, Qt
+from qtpy.QtWidgets import (QApplication, QWidget, QPushButton, 
+       QVBoxLayout, QHBoxLayout, QSizePolicy, QLabel)
 
 import os
 import os.path
 
+try:
+    QString = unicode
+except NameError:
+    # Python 3
+    QString = str
+
 class ServersDialog (QDialog):
+  serverSelected = Signal()
+  startKernel = Signal()
+
   def __init__(self,parent=None,name=None,modal=0,fl=None):
     if fl is None:
       fl = Qt.Dialog|Qt.WindowTitleHint;
@@ -73,14 +86,15 @@ class ServersDialog (QDialog):
     lo.addWidget(self.server_list);
     # self.server_list.header().hide();
     self.server_list.setHeaderLabels(["server","stat","dir","script"]);
-    self.server_list.header().setResizeMode(0,QHeaderView.ResizeToContents);
-    self.server_list.header().setResizeMode(1,QHeaderView.ResizeToContents);
+    # BH_FIX_ME
+#   self.server_list.header().setResizeMode(0,QHeaderView.ResizeToContents);
+#   self.server_list.header().setResizeMode(1,QHeaderView.ResizeToContents);
     self.server_list.header().setStretchLastSection(False);
     try:
       self.server_list.setAllColumnsShowFocus(True);
     except AttributeError:
       pass;
-    QObject.connect(self.server_list,SIGNAL("itemActivated(QTreeWidgetItem*,int)"),self._server_selected);
+    self.server_list.itemActivated[QTreeWidgetItem, int].connect(self._server_selected)
     lo_top.addWidget(self.gb_servers)
 
     self.gb_local = QGroupBox(LayoutWidget)
@@ -117,8 +131,7 @@ class ServersDialog (QDialog):
     self.start_default = QPushButton(lo_start_grp3)
     self.start_default.setEnabled(False);
     lo_start3.addWidget(self.start_default,0)
-    QObject.connect(self.start_local,SIGNAL("clicked()"),
-                    self._start_local_server_selected);
+    self.start_local.clicked.connect(self._start_local_server_selected)
 
     #lo_remote_grp = QWidget(self.gb_local)
     #lo_remote = QHBoxLayout(lo_remote_grp,0,6,"lo_remote")
@@ -176,13 +189,13 @@ class ServersDialog (QDialog):
     #self.resize(QSize(489,330).expandedTo(self.minimumSizeHint()))
     # self.clearWState(Qt.WState_Polished)
     
-    self.connect(self.btn_cancel,SIGNAL("clicked()"),self.reject)
+    self.btn_cancel.clicked.connect(self.reject)
     
     ### my additions
-    #self.connect(self.btn_remote,SIGNAL("toggled(bool)"),lo_remote_grp,SLOT("setEnabled(bool)"));
-    self.connect(self.start_browse,SIGNAL("clicked()"),self.browse_kernel_dialog);
-    self.connect(self.start_default,SIGNAL("clicked()"),self.reset_default_path);
-    self.connect(self.start_pathname,SIGNAL("textChanged(const QString &)"),self.changed_path);
+    #self.connect(self.btn_remote,Signal("toggled(bool)"),lo_remote_grp,SLOT("setEnabled(bool)"));
+    self.start_browse.clicked.connect(self.browse_kernel_dialog)
+    self.start_default.clicked.connect(self.reset_default_path)
+    self.start_pathname.textChanged['QString'].connect(self.changed_path)
 
 
   def languageChange(self):
@@ -207,7 +220,7 @@ class ServersDialog (QDialog):
 
 
   def __tr(self,s,c = None):
-    return qApp.translate("ConnectMeqKernel",s,c)
+    return QCoreApplication.translate("ConnectMeqKernel",s,c)
 
   def set_default_args (self,args):
     self.start_args.setText(args);
@@ -235,12 +248,12 @@ class ServersDialog (QDialog):
       self.start_pathname.setText(str(dialog.selectedFiles()[0]));
   
   def _server_selected (self,item,*dum):
-    self.emit(SIGNAL("serverSelected"),item._addr,);
+    self.serverSelected.emit(item._addr, )
     
   def _start_local_server_selected (self):
     pathname = str(self.start_pathname.text());
     args = str(self.start_args.text());
-    self.emit(SIGNAL("startKernel"),pathname,args);
+    self.startKernel.emit(pathname, args)
   
   def attach_to_server (self,addr):
     for index in range(self.server_list.topLevelItemCount()):
@@ -283,3 +296,18 @@ class ServersDialog (QDialog):
       script = staterec and staterec.get('script_name');
       script = script and os.path.basename(script);
       item.setText(3,script or '');
+
+def main(args):
+  app = QApplication(sys.argv)
+  print('app initialized')
+  demo = ServersDialog()
+  print('demo initialized')
+  demo.show()
+  print('demo showing')
+  app.exec_()
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+
+

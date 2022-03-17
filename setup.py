@@ -58,7 +58,7 @@ install_requires = [
     'six',
     'configparser',
     'PythonQwt>=0.10.1',
-    'pyqt'
+    'qtpy'
 ] + [ # meqtrees sister packages    
     'purr',
     'astro-kittens',

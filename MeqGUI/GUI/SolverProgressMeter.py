@@ -25,17 +25,20 @@
 #
 
 import time
+import sys
+#from PyQt5.QtWidgets import *
 
 from Timba import dmi
 from Timba.utils import PersistentCurrier
 from Timba.Meq import meqds
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import (QWidget, QHBoxLayout, QSizePolicy, QProgressBar, 
+     QLabel, QToolButton, QApplication, QDialog, QPushButton)
+from qtpy.QtCore import Qt, QObject, Signal, QTimer
 
 import six
 if six.PY2:
-  chr = unichr
+  chr = chr
   
 chisqr = chr(0x3c7)+'<sup>2</sup>';
 
@@ -44,7 +47,7 @@ class SolverProgressMeter (QWidget):
   to track progress messages from a Solver. It is normally meant
   to be part of a status bar.
   """;
-  def __init__ (self,parent):
+  def __init__ (self,parent=None):
     QWidget.__init__(self,parent);
     lo = QHBoxLayout(self);
     lo.setContentsMargins(5,0,5,0);
@@ -60,7 +63,7 @@ class SolverProgressMeter (QWidget):
     self._wstop.setToolTip("Press this button to stop the current solution");
     self._wstop.setToolButtonStyle(Qt.ToolButtonTextOnly);
     self._wstop.setAutoRaise(True);
-    QObject.connect(self._wstop,SIGNAL("clicked()"),self.stop_solver);
+    self._wstop.clicked.connect(self.stop_solver)
     self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Minimum);
     self._solver = None;
     self._app = None;
@@ -71,15 +74,15 @@ class SolverProgressMeter (QWidget):
     # iterations-per-second stats -- kept separately by solver name
     # in case of cuncurrent solvers
     self._ips = {};
-    QObject.connect(self._hidetimer,SIGNAL("timeout()"),self._timed_reset);
+    self._hidetimer.timeout.connect(self._timed_reset)
     
   def connect_app_signals (self,app):
     """connects standard app signals to appropriate methods."""
     self._app = app;
-    QObject.connect(app,PYSIGNAL("solver.begin"),self.xcurry(self.solver_begin,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("solver.iter"),self.xcurry(self.solver_iter,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("solver.end"),self.xcurry(self.solver_end,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("isConnected()"),self.xcurry(self.reset));
+    app.solver.begin.connect(self.xcurry(self.solver_begin,_argslice=slice(1,2)))
+    app.solver.iter.connect(self.xcurry(self.solver_iter,_argslice=slice(1,2)))
+    app.solver.end.connect(self.xcurry(self.solver_end,_argslice=slice(1,2)))
+    app.isConnected.connect(self.xcurry(self.reset))
     
   def _show (self,secs=60):
     """shows meter, and starts timer to hide after the specified number of
@@ -182,3 +185,17 @@ class SolverProgressMeter (QWidget):
     self.disable_stop_button("stopping...");
     meqds.mqs().setnodestate(self._solver,dmi.record(interrupt_solution=True),sync=False);
         
+def main(args):
+  app = QApplication(sys.argv)
+# print('app initialized')
+  demo = SolverProgressMeter()
+# print('demo initialized')
+  demo._show()
+# print('demo showing')
+  app.exec_()
+
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+

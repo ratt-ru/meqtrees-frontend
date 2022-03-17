@@ -34,8 +34,9 @@ from MeqGUI.GUI import widgets
 from MeqGUI import Grid
 from Timba.Meq import meqds
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL,ClickableTreeWidget
+from qtpy.QtCore import Signal, Qt
+from qtpy.QtWidgets import QWidget, QMenu, QTreeWidgetItem, QHeaderView
+from Kittens.widgets import ClickableTreeWidget
 from MeqGUI.GUI.widgets import DataDraggableTreeWidget
 
 import sys
@@ -52,6 +53,7 @@ _dprintf = _dbg.dprintf;
 
 # helper class implementing a 'Precision' menu
 class PrecisionPopupMenu (QMenu):
+  setPrecision = Signal()
   def_range = list(range(0,12));
   num_formats = (('f','&Fixed-point'),('e','&Exponent'),('g','&Auto'));
   def __init__ (self,parent=None,precrange=None,prec=(None,'g')):
@@ -71,7 +73,7 @@ class PrecisionPopupMenu (QMenu):
       self._format_qa[fcode] = qa = QAction(name,format_qag);
       self.addAction(qa);
       qa.setCheckable(True);
-      QObject.connect(qa,SIGNAL("triggered(bool)"),self._currier.curry(self.set_format,fcode));
+      qa.triggered.connect(self._currier.curry(self.set_format,fcode));
     # precision title
     #tlab = QLabel("<i>Precision:</i>",self);
     #tlab.setAlignment(Qt.AlignCenter);
@@ -85,12 +87,12 @@ class PrecisionPopupMenu (QMenu):
     self._prec_qa[None] = qa = QAction("Default",prec_qag);
     self.addAction(qa);
     qa.setCheckable(True);
-    QObject.connect(qa,SIGNAL("toggled(bool)"),self._currier.curry(self.set_prec,None));
+    qa.toggled.connect(self._currier.curry(self.set_prec,None));
     for p in self._precrange:
       self._prec_qa[p] = qa = QAction(str(p),prec_qag);
       self.addAction(qa);
       qa.setCheckable(True);
-      QObject.connect(qa,SIGNAL("toggled(bool)"),self._currier.curry(self.set_prec,p));
+      qa.toggled.connect(self._currier.curry(self.set_prec,p));
     # set initial precision
     self.set(prec);
     
@@ -102,7 +104,7 @@ class PrecisionPopupMenu (QMenu):
     for qa in self._prec_qa[prec[0]],self._format_qa[prec[1]]:
       if not qa.isChecked(): 
         qa.setChecked(True);
-    self.emit(SIGNAL("setPrecision"),*self._prec);
+    self.setPrecision.emit(*self._prec)
     
   def set_prec (self,prec,set=True):
     if set:
@@ -125,6 +127,9 @@ class HierBrowser (object):
   MaxWidth       = 400;
   
   class Item (QTreeWidgetItem):
+    displayDataItem = Signal()
+    cleared = Signal()
+
     def __init__(self,parent,key,value,udi_key=None,udi=None,
                  parent_udi=None,strfunc=None,
                  prec=(None,'g'),name=None,caption=None,desc=''):
@@ -255,7 +260,7 @@ class HierBrowser (object):
           content_iter = [(k,content[k]) for k in keys];
           content_iter.append(('...','...(%d items skipped)...'%n));
         else:
-          content_iter = iter(content.items());
+          content_iter = iter(list(content.items()));
       elif isinstance(content,(list,tuple,array_class)):
         n = len(content) - HierBrowser.MaxExpSeq;
         if n > 0:
@@ -388,7 +393,7 @@ class HierBrowser (object):
           qa = menu.addMenu(self._prec_menu);
           qa.setText('Number format');
           qa.setIcon(pixmaps.precplus.icon());
-          QWidget.connect(self._prec_menu,PYSIGNAL("setPrecision()"),self._set_prec_frommenu);
+          self._prec_menu.setPrecision.connect(self._set_prec_frommenu)
         # create "display with" entries
         if viewer_list: 
           # create display submenus
@@ -413,7 +418,7 @@ class HierBrowser (object):
       _dprint(2,"emitting displayDataItem() signal");
       dataitem = self.make_data_item(viewer=viewer);
       if dataitem:
-        self.treeWidget().emit(SIGNAL("displayDataItem"),dataitem,kwargs);
+        self.treeWidget().displayDataItem.emit(dataitem, kwargs)
 
   # init for HierBrowser
   def __init__(self,parent,name,name1='',udi_root=None,caption=None,prec=(None,'g'),maxwidth=None):
@@ -421,11 +426,11 @@ class HierBrowser (object):
     self._tw.setHeaderLabels([name1,'',name]);
     self._tw.setRootIsDecorated(True);
     self._tw.setSortingEnabled(False);
-    self._tw.header().setResizeMode(0,QHeaderView.ResizeToContents);
-    self._tw.header().setResizeMode(1,QHeaderView.ResizeToContents);
-    self._tw.header().setResizeMode(2,QHeaderView.ResizeToContents);
+    self._tw.header().setSectionResizeMode(0,QHeaderView.ResizeToContents);
+    self._tw.header().setSectionResizeMode(1,QHeaderView.ResizeToContents);
+    self._tw.header().setSectionResizeMode(2,QHeaderView.ResizeToContents);
     self._tw.header().setStretchLastSection(False);
-    self._tw.header().setResizeMode(QHeaderView.ResizeToContents);
+    self._tw.header().setSectionResizeMode(QHeaderView.ResizeToContents);
 
     self._tw.header().hide();
     setattr(self._tw,'_maxwidth',maxwidth or HierBrowser.MaxWidth);
@@ -433,12 +438,9 @@ class HierBrowser (object):
 #    for col in (0,1,2):
 #      self._tw.setColumnWidthMode(col,QListView.Maximum);
 #    self._tw.setFocus();
-    QObject.connect(self._tw,SIGNAL('itemExpanded(QTreeWidgetItem*)'),
-                     self._expand_item_content);
-    QObject.connect(self._tw,PYSIGNAL('mouseButtonClicked()'),self._process_item_click);
-    QObject.connect(self._tw,PYSIGNAL('itemContextMenuRequested()'),self._show_context_menu);
-#    self._tw.connect(self._tw,SIGNAL('doubleClicked(QListViewItem*)'),
-#                     self.display_item);
+    self._tw.itemExpanded.connect(self._expand_item_content);
+    self._tw.mouseButtonClicked.connect(self._process_item_click);
+    self._tw.itemContextMenuRequested.connect(self._show_context_menu);
     # connect the get_drag_item method for drag-and-drop
     self._tw.get_drag_item = self.get_drag_item;
     self._tw.get_drag_item_type = self.get_drag_item_type;
@@ -447,7 +449,7 @@ class HierBrowser (object):
     # initialize precision
     self._tw._prec = prec;
     # for debugging purposes
-    QObject.connect(self._tw,SIGNAL("itemClicked(QTreeWidgetItem*)"),self._print_item);
+    self._tw.itemClicked.connect(self._print_item);
     
   def get_precision (self):
     return self._tw._prec;
@@ -502,7 +504,7 @@ class HierBrowser (object):
     for attr in ('_content',):
       try: delattr(self._tw,attr);
       except: pass;
-    self.wtop().emit(SIGNAL("cleared"));
+    self.wtop().cleared.emit()
       
   # limits browser to last 'limit' items
   def apply_limit (self,limit):
@@ -655,7 +657,7 @@ class RecordBrowser(HierBrowser,GriddedPlugin):
     HierBrowser.__init__(self,self.wparent(),"value","field",
         udi_root=dataitem.udi);
     # adjust columns when font changes
-    QObject.connect(self.wtop(),PYSIGNAL("fontChanged()"),self._resize_sections);
+    self.wtop().fontChanged.connect(self._resize_sections);
     
     self.set_widgets(self.wtop(),dataitem.caption,icon=self.icon());
     self._rec = None;
@@ -671,11 +673,11 @@ class RecordBrowser(HierBrowser,GriddedPlugin):
       qa = context_menu.addMenu(menu);
       qa.setIcon(pixmaps.precplus.icon());
       qa.setText('Number format');
-      QWidget.connect(menu,PYSIGNAL("setPrecision()"),self._set_prec_from_menu);
+      menu.setPrecision.connect(self._set_prec_from_menu)
     
   def _resize_sections (self):
     for section in (0,1):
-      self.wtop().header().setResizeMode(section,QHeaderView.ResizeToContents);
+      self.wtop().header().setSectionResizeMode(section,QHeaderView.ResizeToContents);
   
   def _set_prec_from_menu (self,prec,format):
     self.set_precision((prec,format));

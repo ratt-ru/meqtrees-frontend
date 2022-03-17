@@ -70,16 +70,13 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
 import sys
 
-from qwt.qt.QtGui import (QApplication, QMainWindow, QDialog, QGridLayout,QHBoxLayout,
+from qtpy.QtWidgets import (QApplication, QMainWindow, QWidget, QDialog, QGridLayout,QHBoxLayout, QMenu, QAction,
          QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem, QTabWidget,QDoubleSpinBox)
-from qwt.qt.QtGui import QPen, QColor,QWidget, QImage, qRgba, QFont, QFontInfo, QMenu, QActionGroup, QAction
-from qwt.qt.QtCore import Qt, QSize, QObject, pyqtSignal
+from qtpy.QtGui import QPen, QColor, QImage, qRgba, QFont, QFontInfo
+from qtpy.QtCore import Qt, QSize, QObject, Signal
 
 from MeqGUI.Plugins.BufferSizeDialog_qt5 import BufferSizeDialog
 
@@ -101,22 +98,22 @@ When you click in the area of the widget with the right mouse button a context m
 
 class ResultsRange(QWidget):
 
-#   result_index = pyqtSignal(float)
-    result_index = pyqtSignal('PyQt_PyObject')
-    X_axis_selected = pyqtSignal()
-    Y_axis_selected = pyqtSignal()
-    Z_axis_selected = pyqtSignal()
-    align_camera = pyqtSignal()
-    twoD_display_requested = pyqtSignal()
-    save_display = pyqtSignal()
-    postscript_requested = pyqtSignal()
-    doubleValueChanged = pyqtSignal(float)
-    update_requested = pyqtSignal()
-    show_ND_Controller = pyqtSignal()
-    update_scale = pyqtSignal()
-    set_auto_scaling = pyqtSignal()
-    adjust_results_buffer_size = pyqtSignal(int)
-    display_summary_plot = pyqtSignal()
+#   result_index = Signal(float)
+    result_index = Signal('PyQt_PyObject')
+    X_axis_selected = Signal()
+    Y_axis_selected = Signal()
+    Z_axis_selected = Signal()
+    align_camera = Signal()
+    twoD_display_requested = Signal()
+    save_display = Signal()
+    postscript_requested = Signal()
+    doubleValueChanged = Signal(float)
+    update_requested = Signal()
+    show_ND_Controller = Signal()
+    update_scale = Signal()
+    set_auto_scaling = Signal()
+    adjust_results_buffer_size = Signal(int)
+    display_summary_plot = Signal()
 
 
     def __init__(self, parent=None, name="",horizontal=False,draw_scale=True,hide_slider=False, use_int=False, add_spacer=True):

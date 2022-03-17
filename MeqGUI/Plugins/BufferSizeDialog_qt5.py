@@ -30,21 +30,21 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 
-from qwt.qt.QtGui import (QApplication, QDialog, QHBoxLayout,
+from qtpy.QtWidgets import (QApplication, QDialog, QHBoxLayout,
          QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem)
-from qwt.qt.QtCore import Qt, QSize, QObject, pyqtSignal
-from qwt.qt.QtGui import QWidget, QFont, QFontInfo
+from qtpy.QtCore import Qt, QSize, QObject, Signal
+from qtpy.QtGui import QFont, QFontInfo
 
 
 class BufferSizeDialog(QDialog):
 
-    return_value = pyqtSignal(int)
+    return_value = Signal(int)
 
     def __init__(self, buffersize = 0, parent = None,name = None,modal = True,fl = 0):
         QDialog.__init__(self,parent)

@@ -68,12 +68,12 @@
 #
 
 # modules that are imported
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
-from qwt.qt.QtGui import QApplication, QGridLayout, QWidget
-from qwt.qt.QtCore import Qt, QObject, pyqtSignal
+
+
+
+from qtpy.QtWidgets import QApplication, QGridLayout, QWidget
+from qtpy.QtCore import Qt, QObject, Signal
 
 # modules that are imported
 

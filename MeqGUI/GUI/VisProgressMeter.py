@@ -25,9 +25,12 @@
 #
 
 import time
+import sys
+#from PyQt5.QtWidgets import *
+from qtpy.QtWidgets import (QWidget, QHBoxLayout, QSizePolicy, QProgressBar,
+     QLabel, QToolButton, QApplication)
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtCore import QObject, Signal, Qt
 
 from Timba import dmi
 from Timba.utils import PersistentCurrier
@@ -43,7 +46,7 @@ class VisProgressMeter (QWidget):
   to track progress messages from a VisDataMux. It is normally meant
   to be part of a status bar
   """;
-  def __init__ (self,parent):
+  def __init__ (self,parent=None):
     QWidget.__init__(self,parent);
     lo = QHBoxLayout(self);
     lo.setContentsMargins(5,0,5,0);
@@ -103,12 +106,12 @@ class VisProgressMeter (QWidget):
   def connect_app_signals (self,app):
     """connects standard app signals to appropriate methods."""
     self._app = app;
-    QObject.connect(app,PYSIGNAL("vis.channel.open"),self.xcurry(self.start,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("vis.header"),self.xcurry(self.header,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("vis.num.tiles"),self.xcurry(self.update,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("vis.footer"),self.xcurry(self.footer,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("vis.channel.closed"),self.xcurry(self.close,_argslice=slice(1,2)));
-    QObject.connect(app,PYSIGNAL("isConnected()"),self.xcurry(self.reset));
+    app.vis.channel.open.connect(self.xcurry(self.start,_argslice=slice(1,2)))
+    app.vis.header.connect(self.xcurry(self.header,_argslice=slice(1,2)))
+    app.vis.num.tiles.connect(self.xcurry(self.update,_argslice=slice(1,2)))
+    app.vis.footer.connect(self.xcurry(self.footer,_argslice=slice(1,2)))
+    app.vis.channel.closed.connect(self.xcurry(self.close,_argslice=slice(1,2)))
+    app.isConnected.connect(self.xcurry(self.reset))
     
   def _show (self):
     self._wlabel.show();
@@ -265,3 +268,18 @@ class VisProgressMeter (QWidget):
     self._wtime.setText(""); 
     self._wtime.hide();
     self.hide();
+
+def main(args):
+  app = QApplication(sys.argv)
+# print('app initialized')
+  demo = VisProgressMeter()
+# print('demo initialized')
+  demo._show()
+# print('demo showing')
+  app.exec_()
+
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+

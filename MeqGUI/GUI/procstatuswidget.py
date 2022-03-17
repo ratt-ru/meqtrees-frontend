@@ -25,12 +25,13 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+import sys
+from qtpy.QtWidgets import QSizePolicy, QLabel, QApplication
+from qtpy.QtCore import Qt
 
 class ProcStatusWidget (QLabel):
   
-  def __init__(self,parent,width=None,height=None):
+  def __init__(self,parent=None,width=None,height=None):
     QLabel.__init__(self,parent);
     # self.setSizePolicy(QSizePolicy(QSizePolicy.Minimum,QSizePolicy.Preferred));
     if width is not None:
@@ -78,3 +79,17 @@ class ProcStatusWidget (QLabel):
     s += "</small></nobr>";
     # set label
     self.setText(s);
+
+def main(args):
+  app = QApplication(sys.argv)
+  print('app initialized')
+  demo = ProcStatusWidget()
+  print('demo initialized')
+# app.exec_()
+
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+
+

@@ -69,8 +69,8 @@
 # to plotting. I've tried to collect all such operations
 # into one file so that maintenance is easy.
 
-from qwt.qt.QtGui import QApplication,QWidget
-from qwt.qt.QtCore import Qt
+from qtpy.QtWidgets import QApplication,QWidget
+from qtpy.QtCore import Qt
 
 import numpy
 

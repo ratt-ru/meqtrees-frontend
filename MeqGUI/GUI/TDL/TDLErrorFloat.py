@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QDialog, QToolBar
+from qtpy.QtCore import QEvent, QObject, Signal, Qt, QSize, QTimer, QPoint
+from qtpy.QtWidgets import (QMainWindow, QWidget, QDialog, QLabel,
+       QVBoxLayout, QHBoxLayout, QSizePolicy, QPushButton, 
+       QTreeWidget, QTreeWidgetItem, QHeaderView, QAbstractItemView)
+
+
 
 import Timba
 from MeqGUI import Grid, GUI, Plugins
@@ -19,6 +24,9 @@ _dprintf = _dbg.dprintf;
 
 class TDLErrorFloat (QMainWindow,PersistentCurrier):
   """implements a floating window for TDL error reports""";
+  hasErrors = Signal()
+  showError = Signal()
+
   def __init__ (self,parent):
     QMainWindow.__init__(self,parent,Qt.Dialog|Qt.WindowTitleHint);
     self.hide();
@@ -38,10 +46,10 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
     # prev/next error buttons
     self._qa_prev_err = errlist_hdr.addAction(pixmaps.red_leftarrow.icon(),"Show &previous error")
     self._qa_prev_err.setShortcut(Qt.ALT+Qt.Key_P);
-    QObject.connect(self._qa_prev_err,SIGNAL("triggered()"),self._show_prev_error);
+    self._qa_prev_err.triggered.connect(self._show_prev_error)
     self._qa_next_err = errlist_hdr.addAction(pixmaps.red_rightarrow.icon(),"Show &next error");
     self._qa_next_err.setShortcut(Qt.ALT+Qt.Key_N);
-    QObject.connect(self._qa_next_err,SIGNAL("triggered()"),self._show_next_error);
+    self._qa_next_err.triggered.connect(self._show_next_error)
     # label with error count
     self._error_count_label = QLabel(errlist_hdr);
     errlist_hdr.addWidget(self._error_count_label);
@@ -50,10 +58,10 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
     self._werrlist = QTreeWidget(self._werrlist_box);
     lo.addWidget(self._werrlist);
     self._werrlist.setSizePolicy(QSizePolicy.MinimumExpanding,QSizePolicy.Preferred);
-    QObject.connect(self._werrlist,SIGNAL("currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)"),self.curry(self._process_item_click,"currentChanged"));
-    QObject.connect(self._werrlist,SIGNAL("itemClicked(QTreeWidgetItem*,int)"),self.curry(self._process_item_click,"clicked"));
-    QObject.connect(self._werrlist,SIGNAL("itemActivated(QTreeWidgetItem*,int)"),self.curry(self._process_item_click,"spacePressed"));
-    QObject.connect(self._werrlist,SIGNAL("itemExpanded(QTreeWidgetItem*)"),self.curry(self._process_item_click,"expanded"));
+    self._werrlist.currentItemChanged[QTreeWidgetItem, QTreeWidgetItem].connect(self.curry(self._process_item_click,"currentChanged"))
+    self._werrlist.itemClicked[QTreeWidgetItem, int].connect(self.curry(self._process_item_click,"clicked"))
+    self._werrlist.itemActivated[QTreeWidgetItem, int].connect(self.curry(self._process_item_click,"spacePressed"))
+    self._werrlist.itemExpanded[QTreeWidgetItem].connect(self.curry(self._process_item_click,"expanded"))
     self._werrlist.setColumnCount(4);
     self._werrlist.setSortingEnabled(False);
     self._werrlist.setRootIsDecorated(True);
@@ -64,9 +72,11 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
     header = self._werrlist.header();
     header.hide(); # setHeaderHidden(True);
     header.setStretchLastSection(False);
-    for col in [0,2,3]:
-      header.setResizeMode(col,QHeaderView.ResizeToContents);
-    header.setResizeMode(1,QHeaderView.Stretch);
+# setResizeMode doesn't seem to be there in python 3
+# BH_WARNING_FIXME
+#   for col in [0,2,3]:
+#     header.setResizeMode(col,QHeaderView.ResizeToContents);
+#   header.setResizeMode(1,QHeaderView.Stretch);
     self._werrlist.setSelectionMode(QAbstractItemView.SingleSelection);
     # size the widget
     # self.setMinimumSize(QSize(500,120));
@@ -262,7 +272,7 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
       self._error_count_label.setText('%s: <b>%d</b> errors'%(message,nerr));
       self.setWindowTitle("TDL Errors: %d"%nerr);
       if emit_signal:
-        self.emit(PYSIGNAL("hasErrors"),nerr);
+        self.hasErrors.emit(nerr)
       if show_item:
         self._show_error_item(self._toplevel_error_items[0]);
       self.show();
@@ -271,7 +281,7 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
       # self._qa_run.setVisible(False);
     else:
       if emit_signal:
-        self.emit(PYSIGNAL("hasErrors"),0);
+        self.hasErrors.emit(0)
       self.setWindowTitle("TDL Errors");
       self.hide();
 
@@ -284,7 +294,7 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
   def clear_errors (self,emit_signal=True):
     """clears the error list. If emit_signal=True, emits a hasErrors(0) pysignal""";
     if emit_signal:
-      self.emit(PYSIGNAL("hasErrors"),0);
+      self.hasErrors.emit(0)
     self._error_items = self._toplevel_error_items = None;
     self.setWindowTitle("TDL Errors");
     self._werrlist.clear();
@@ -309,11 +319,11 @@ class TDLErrorFloat (QMainWindow,PersistentCurrier):
         # indicate location
         _dprint(1,"highlighting error in",errloc);
         if emit_signal:
-          self.emit(PYSIGNAL("showError"),*errloc);
+          self.showError.emit(*errloc)
         return
     # if we fell through to here, then no error has been shown -- emit appropriate signal
     if emit_signal:
-      self.emit(PYSIGNAL("showError"),None,None,None,None);
+      self.showError.emit(None, None, None, None)
 
   def _show_next_error (self):
     item = self._werrlist.currentItem();

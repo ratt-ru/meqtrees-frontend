@@ -72,16 +72,17 @@
 #
 
 # modules that are imported
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 
-from qwt.qt.QtGui import (QApplication, QGridLayout,QHBoxLayout,
+from qtpy.QtWidgets import (QApplication, QWidget,QGridLayout,QHBoxLayout,
          QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem)
-from qwt.qt.QtGui import QPen, QColor,QWidget, QImage, qRgba
-from qwt.qt.QtCore import Qt, QObject, pyqtSignal
+
+from qtpy.QtGui import QPen, QColor, QImage, qRgba
+from qtpy.QtCore import Qt, QObject, Signal
 
 
 # the AxisRange class is directly adapted from the Qt/PyQt 
@@ -91,8 +92,8 @@ class AxisRange(QWidget):
     """ a spinbox and a slider, either of which can be used to specify
         a value from within an allowed range
     """
-    axis_number = pyqtSignal('int')
-    Value_Changed = pyqtSignal(int, int, str)
+    axis_number = Signal('int')
+    Value_Changed = Signal(int, int, str)
 
     def __init__(self, ax_number=1, axis_parms=None,parent=None, name=""):
         """ specify the layout of the spinbox and the slider """
@@ -242,8 +243,8 @@ If one is working with a <b>3-D</b> display, we can put up 3 dimensions on the s
 
 
 class ND_Controller(QWidget):
-    defineSelectedAxes = pyqtSignal(int,int,int)
-    sliderValueChanged = pyqtSignal(int, int, str)
+    defineSelectedAxes = Signal(int,int,int)
+    sliderValueChanged = Signal(int, int, str)
 
     def __init__(self, array_shape=None, axis_label=None, axis_parms = None, num_axes = 2, parent=None, name=""):
       QWidget.__init__(self, parent)

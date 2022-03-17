@@ -39,11 +39,11 @@ from MeqGUI.GUI.meqserver_gui import makeNodeDataItem
 from MeqGUI import Grid
 
 
-from qt import *
 import weakref
-from qttable import *
 
-
+from qtpy.QtWidgets import (QApplication, QDialog, QHBox, QHBoxLayout, QLabel, 
+     QSlider, QPushButton, QVBoxLayout, QVBox, QTabWidget,QTable)
+from qtpy.QtCore import Qt, QObject, Signal
 
 _dbg = verbosity(0,name='node_fiddle');
 _dprint = _dbg.dprint;
@@ -136,10 +136,10 @@ class ParmFiddler (browsers.GriddedPlugin):
    
     tooltip="Double Click to get complete funklet, right mouse for more options";
     QToolTip.add(self.parmtable,tooltip);
-    QObject.connect( self.parmtable, SIGNAL("selectionChanged()"), self.parmSetIndex )
-    QObject.connect( self.parmtable, SIGNAL("doubleClicked(int, int, int, const QPoint &)"), self.parmSelected )
-    QObject.connect( self.parmtable, SIGNAL("clicked(int, int, int, const QPoint &)"), self.parmClicked)
-    QObject.connect( self.parmtable, SIGNAL("contextMenuRequested ( int, int, const QPoint &)"), self.rightMouse);
+    self.parmtable.selectionChanged.connect(self.parmSetIndex)
+    self.parmtable.doubleClicked[int, int, int, QPoint].connect(self.parmSelected)
+    self.parmtable.clicked[int, int, int, QPoint].connect(self.parmClicked)
+    self.parmtable.contextMenuRequested [int, int, QPoint].connect(self.rightMouse)
     self.sliderframe = QVBox(self.wtop());
 #    self.c00frame = QHBox(self.sliderframe);
 
@@ -166,15 +166,15 @@ class ParmFiddler (browsers.GriddedPlugin):
     self.slider1.setTracking(True);
     self.slider1.setEnabled(False);
     
-    QObject.connect(self.slider1,SIGNAL("valueChanged(int)"),self.changeC00Text);
-    QObject.connect(self.slider1,SIGNAL("sliderReleased()"),self.updateC00);
+    self.slider1.valueChanged[int].connect(self.changeC00Text)
+    self.slider1.sliderReleased.connect(self.updateC00)
 
     self.spinframe = QHBox(self.sliderframe);
     self.labelSpin =  QLabel("stepsize:", self.spinframe ,"labelSpin");
     self.stepsizeList = QComboBox(False, self.spinframe ,"stepsizeList");
     tooltip="Adjust stepsize of slider";
     QToolTip.add(self.stepsizeList,tooltip);
-    QObject.connect(self.stepsizeList,SIGNAL("activated(int)"),self.changeStepsize);
+    self.stepsizeList.activated[int].connect(self.changeStepsize)
     self.fillstepsizelist();
     self.stepsize=1.;
 
@@ -190,7 +190,7 @@ class ParmFiddler (browsers.GriddedPlugin):
     QToolTip.add(self.enable_multi,tooltip);
     self.enable_multi.setEnabled(True);
     self.enable_multi.setChecked(True);
-    QObject.connect(self.enable_multi,SIGNAL("clicked()"),self.toggle_multi);
+    self.enable_multi.clicked.connect(self.toggle_multi)
     
     
     self.ButtonFrame = QHBox(self.sliderframe);
@@ -206,8 +206,8 @@ class ParmFiddler (browsers.GriddedPlugin):
     QToolTip.add(self.buttonReset,tooltip);
     self.buttonOk.setEnabled(False);
     self.buttonReset.setEnabled(False);
-    QObject.connect(self.buttonOk,SIGNAL("clicked()"),self.do_reexecute);
-    QObject.connect(self.buttonReset,SIGNAL("clicked()"),self.resetfunklet);
+    self.buttonOk.clicked.connect(self.do_reexecute)
+    self.buttonReset.clicked.connect(self.resetfunklet)
 
     # form a caption and set contents
     (name,ni) = meqds.parse_node_udi(dataitem.udi);
@@ -319,7 +319,7 @@ class ParmFiddler (browsers.GriddedPlugin):
 #        self.parmtable.horizontalHeader () .setLabel(3,"i");
         tooltip="click to sort";
         QToolTip.add(self.parmtable.horizontalHeader (),tooltip);
-        QObject.connect( self.parmtable.horizontalHeader (),SIGNAL("released(int)"),self.sortColumn);
+        self.parmtable.horizontalHeader ().released[int].connect(self.sortColumn)
         if self._currentparm:
             self._currentparm.reject();
             self._currentparm=None;
@@ -406,7 +406,7 @@ class ParmFiddler (browsers.GriddedPlugin):
               self._solverdict[solvernm]['col']=n;
  #             self.parmtable.setColumnReadOnly(n,True);
               n+=1;
-      #QObject.connect(self.parmtable.horizontalHeader (),SIGNAL("clicked(int)"),self.sortbycol)
+      #QObject.connect(self.parmtable.horizontalHeader (),Signal("clicked(int)"),self.sortbycol)
       parmnr=0;
       for parmkey in self._parmlist:
           
@@ -1101,25 +1101,25 @@ class editParm(QDialog):
 
       
       self.cmdAddRow = QPushButton('Add Row', self)
-      QObject.connect(self.cmdAddRow, SIGNAL('clicked()'), self.slotcmdAddRow)
+      self.cmdAddRow.clicked.connect(self.slotcmdAddRow)
       self.Bh.addWidget(self.cmdAddRow)
       self.cmdRemoveRow = QPushButton('Remove Row', self)
-      QObject.connect(self.cmdRemoveRow, SIGNAL('clicked()'), self.slotcmdRemoveRow)
+      self.cmdRemoveRow.clicked.connect(self.slotcmdRemoveRow)
       self.Bh.addWidget(self.cmdRemoveRow)
       self.cmdAddCol = QPushButton('Add Column', self)
-      QObject.connect(self.cmdAddCol, SIGNAL('clicked()'), self.slotcmdAddCol)
+      self.cmdAddCol.clicked.connect(self.slotcmdAddCol)
       self.Bh.addWidget(self.cmdAddCol)
       self.cmdRemoveCol = QPushButton('Remove Column', self)
-      QObject.connect(self.cmdRemoveCol, SIGNAL('clicked()'), self.slotcmdRemoveCol)
+      self.cmdRemoveCol.clicked.connect(self.slotcmdRemoveCol)
       self.Bh.addWidget(self.cmdRemoveCol)
       self.Bh0 = QHBoxLayout(self.v, 5)
       self.offsLabel = QLabel("Offset (t,f)",self);
       self.Bh0.addWidget(self.offsLabel);
       self.offsF = QLineEdit(self);
-#      QObject.connect(self.offsF, SIGNAL(' textChanged(QString)'), self.slotcmdUpdateOffs)
+#      QObject.connect(self.offsF, Signal(' textChanged(QString)'), self.slotcmdUpdateOffs)
       self.Bh0.addWidget(self.offsF);
       self.offsT = QLineEdit(self);
-#      QObject.connect(self.offsT, SIGNAL(' textChanged(QString)'), self.slotcmdUpdateOffs)
+#      QObject.connect(self.offsT, Signal(' textChanged(QString)'), self.slotcmdUpdateOffs)
       self.Bh0.addWidget(self.offsT);
 
       self.Bh1 = QHBoxLayout(self.v, 5)
@@ -1136,22 +1136,22 @@ class editParm(QDialog):
       self.Bh2 = QHBoxLayout(self.v, 5)
       
       self.cmdOK = QPushButton('Apply', self)
-      QObject.connect(self.cmdOK, SIGNAL('clicked()'), self.slotcmdOK)
+      self.cmdOK.clicked.connect(self.slotcmdOK)
 
       self.cmdOK.setFocus();
       
       self.Bh2.addWidget(self.cmdOK)
       self.cmdCancel = QPushButton('Cancel', self)
-      QObject.connect(self.cmdCancel, SIGNAL('clicked()'), self.slotcmdCancel)
+      self.cmdCancel.clicked.connect(self.slotcmdCancel)
       self.Bh2.addWidget(self.cmdCancel);
       self.cmdDefault = QPushButton('Set as Default', self)
-      QObject.connect(self.cmdDefault, SIGNAL('clicked()'), self.slotcmdDefault)
+      self.cmdDefault.clicked.connect(self.slotcmdDefault)
       self.Bh2.addWidget(self.cmdDefault)
 
       self.cmdCancel.setIconSet(pixmaps.cancel.iconset());
       self.cmdOK.setIconSet(pixmaps.check.iconset());
 
-      QObject.connect(self.funkgrid,SIGNAL('valueChanged(int,int)'),self.updateCoeff);
+      self.funkgrid.valueChanged[int, int].connect(self.updateCoeff)
       
       self.updategrid();
 

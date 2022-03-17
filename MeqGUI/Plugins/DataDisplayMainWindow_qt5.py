@@ -66,27 +66,29 @@
 #
 
 # This is a translation to python of the ACSIS IfDisplayMainWindow.cc code
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 import random
 import traceback
 import numpy
+import traceback
 
-from qwt.qt.QtGui import (QApplication, QMainWindow, QDialog, QGridLayout,QHBoxLayout,QToolButton,
-         QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem, QTabWidget, QPixmap)
-from qwt.qt.QtGui import QPen, QColor,QWidget, QImage, qRgba, QFont, QFontInfo, QMenu, QActionGroup, QAction, QButtonGroup
-from qwt.qt.QtCore import Qt, QSize, QObject, pyqtSignal
+from qtpy.QtWidgets import (QApplication, QWidget, QMainWindow, QDialog, QGridLayout,QHBoxLayout,QToolButton, QMenu, QActionGroup, QAction,
+         QLabel, QSizePolicy, QSlider, QPushButton, QVBoxLayout, QSpinBox, QSpacerItem, QTabWidget)
+from qtpy.QtGui import QPen, QColor, QImage, qRgba, QFont, QFontInfo
+
+from qtpy.QtCore import Qt, QSize, QObject, Signal
 
 from MeqGUI.Plugins.chartplot_qt5 import ChartPlot
 
 class ControlMenu (QMenu):
   """This is the control menu common to all the ChartPlot widgets"""
-  changeComplexComponent = pyqtSignal(str)
-  changeStokesComponent = pyqtSignal(str)
-  changeVellsComponent = pyqtSignal(str)
+  changeComplexComponent = Signal(str)
+  changeStokesComponent = Signal(str)
+  changeVellsComponent = Signal(str)
 
   AMP = "Amplitude";
   PHASE = "Phase";
@@ -386,9 +388,9 @@ class DisplayMainWindow(QMainWindow):
   """ This class enables the display of a collection
       of ChartPlot widgets contained within a tabwidget
   """
-  number_of_tabs = pyqtSignal(int)
-  auto_offset_value = pyqtSignal(float)
-  showMessage = pyqtSignal(str)
+  number_of_tabs = Signal(int)
+  auto_offset_value = Signal(float)
+  showMessage = Signal(str)
 
   def __init__(self, parent=None, name=None,num_curves=16,plot_label=None):
     QMainWindow.__init__(self, parent)
@@ -427,12 +429,10 @@ class DisplayMainWindow(QMainWindow):
 
   def updateEvent(self, data_dict):
     data_type = data_dict['data_type']
-#   print('Display updating with type', data_type)
     try:
       self._grab_name = data_dict['source']
     except:
       self._grab_name = ''
-#   print('Display updating with _grab_name', self._grab_name)
     if data_type not in self._ChartPlot:
       self._ChartPlot[data_type] = ChartPlot(self._menu,num_curves=self._num_curves,parent=self)
       self._ChartPlot[data_type].setDataLabel(data_type)
@@ -583,11 +583,11 @@ class DisplayMainWindow(QMainWindow):
       data_dict['channel'] = i
 
       data_dict['data_type'] = 'scalar'
-      data_dict['value'] = (i+1) * random.random()
+      data_dict['value'] = float(i+1) * random.random()
       self.updateEvent(data_dict)
 
       data_dict['data_type'] = 'another scalar'
-      data_dict['value'] = self._gain + (i+1) * random.random()
+      data_dict['value'] = self._gain + float(i+1) * random.random()
       self.updateEvent(data_dict)
 
       data_dict['data_type'] = 'arrays'
@@ -625,10 +625,14 @@ class DisplayMainWindow(QMainWindow):
     return
 
 def make():
+  try:
     demo = DisplayMainWindow()
     demo.show()
     demo.start_test_timer(1000)
     return demo
+  except Exception as error:
+    traceback.print_exc()
+
 
 def main(args):
     app = QApplication(args)

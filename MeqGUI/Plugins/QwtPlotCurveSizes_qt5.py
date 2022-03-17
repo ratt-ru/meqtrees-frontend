@@ -9,9 +9,9 @@
 import sys
 import numpy
 
-from qwt.qt.QtGui import QApplication, QPen, QBrush
-from qwt.qt.QtCore import QSize, QSizeF, QRect, QRectF, QPoint, QPointF
-from qwt.qt.QtCore import Qt
+from qtpy.QtWidgets import QApplication
+from qtpy.QtGui import QPen, QBrush
+from qtpy.QtCore import Qt, QSize, QSizeF, QRect, QRectF, QPoint, QPointF
 from qwt import QwtPlot, QwtSymbol, QwtPlotGrid, QwtPlotCurve, QwtText
 
 class QwtPlotCurveSizes(QwtPlotCurve):

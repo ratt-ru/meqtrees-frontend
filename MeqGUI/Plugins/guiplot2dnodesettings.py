@@ -20,22 +20,19 @@
 # to link this program with  Qt non-commercial edition, and distribute
 # the resulting executable, without including the source code for the
 # Qt non-commercial edition in the source distribution.
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 
-from qt import SIGNAL, Qt, QColorDialog
+
+
+
+from qtpy.QtCore import Qt, QObject, Signal
+#from PyQt5.QtWidgets import *
+from qtpy.QtWidgets import QColorDialog
 
 import os
-import qt
 import re
 import sys
 import types
 from .dialog_window_config import *
-#from tabdialog import *
-
-
-connect = qt.QObject.connect
 
 # helper functions to WidgetSettingsDialog
 _grid_styles = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine,
@@ -108,22 +105,15 @@ class WidgetSettingsDialog:
 
 
     def _connect_signals(self):
-        connect(self._widget.child('buttonOk'), SIGNAL('clicked()'),
-                self._slot_ok_pressed)
+        self._widget.child('buttonOk').clicked.connect(self._slot_ok_pressed)
         
         # grid connections
-        connect(self._maj_colour_button, SIGNAL('clicked()'),
-                self._slot_major_grid_colour)
-        connect(self._min_colour_button, SIGNAL('clicked()'),
-                self._slot_minor_grid_colour)
-        connect(self._maj_x_enabled, SIGNAL('clicked()'),
-                self._slot_enable_major_grid)
-        connect(self._maj_y_enabled, SIGNAL('clicked()'),
-                self._slot_enable_major_grid)
-        connect(self._min_x_enabled, SIGNAL('clicked()'),
-                self._slot_enable_minor_grid)
-        connect(self._min_y_enabled, SIGNAL('clicked()'),
-                self._slot_enable_minor_grid)
+        self._maj_colour_button.clicked.connect(self._slot_major_grid_colour)
+        self._min_colour_button.clicked.connect(self._slot_minor_grid_colour)
+        self._maj_x_enabled.clicked.connect(self._slot_enable_major_grid)
+        self._maj_y_enabled.clicked.connect(self._slot_enable_major_grid)
+        self._min_x_enabled.clicked.connect( self._slot_enable_minor_grid)
+        self._min_y_enabled.clicked.connect(self._slot_enable_minor_grid)
 
     def _slot_ok_pressed(self):
         settings = {}

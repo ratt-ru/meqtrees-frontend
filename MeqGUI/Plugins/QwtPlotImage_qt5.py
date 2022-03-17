@@ -76,16 +76,17 @@
 #  Victoria BC V9E 2E7			 Victoria BC V9E 2E7
 #  CANADA					 CANADA
 #
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 import sys
 import numpy
 import math
 
-from qwt.qt.QtGui import QApplication, QPen, QWidget, QFrame, QImage, qRgb
-from qwt.qt.QtCore import Qt, QSize, QObject
+from qtpy.QtWidgets import QApplication, QWidget, QFrame
+from qtpy.QtGui import  QPen,  QImage, qRgb
+from qtpy.QtCore import Qt, QSize, QObject
 from qwt import (QwtPlot, QwtPlotMarker, QwtPlotGrid, QwtPlotCurve,
                  QwtPlotItem, QwtText, QwtLinearColorMap)
 
@@ -95,7 +96,7 @@ try:
   from MeqGUI.Plugins.ImageScaler import ImageScaler
   from MeqGUI.Plugins.QwtSpy_qt5 import Spy
   from Timba.utils import verbosity
-  dbg = verbosity(0,name='QwtPlotImage');
+  _dbg = verbosity(0,name='QwtPlotImage');
   dprint = _dbg.dprint;
   dprintf = _dbg.dprintf;
   HAS_TIMBA = True
@@ -201,7 +202,7 @@ def oldToQImage(array):
         image = Qt.QImage(
             array.tostring(), width, height, Qt.QImage.Format_ARGB32)
         f_array = numpy.reshape(array,(nx*ny,),order='F')
-        for j in xrange(ny):
+        for j in range(ny):
             pointer = image.scanLine(j)
             pointer.setsize(nx*array.itemsize)
             memory = numpy.frombuffer(pointer, numpy.uint32)
@@ -223,7 +224,7 @@ def convertToQImage(array, use_old=False):
 
 class QwtPlotImage(QwtPlotItem):
 
-    def __init__(self, parent, title =QwtText()):
+    def __init__(self, parent, title =''):
 
         QwtPlotItem.__init__(self)
         self.plot = parent
@@ -255,7 +256,7 @@ class QwtPlotImage(QwtPlotItem):
     def setDisplayType(self, display_type):
       self.display_type = display_type
       if HAS_TIMBA:
-        _dprint(2,'display type set to ', self.display_type);
+        dprint(2,'display type set to ', self.display_type);
     # setDisplayType
 
     def setFlagColour(self, flag_colour):
@@ -460,10 +461,10 @@ class QwtPlotImage(QwtPlotItem):
        scale_max = scale_max + 0.5 * scale_min
       self.dimap = ImageScaler(1, 256, scale_min, scale_max, True)
       if HAS_TIMBA:
-        _dprint(3, 'doing log transform of ', transform_image)
+        dprint(3, 'doing log transform of ', transform_image)
       temp_image = self.dimap.iTransform(transform_image)
       if HAS_TIMBA:
-        _dprint(3, 'log transformed image ', temp_image)
+        dprint(3, 'log transformed image ', temp_image)
       return temp_image
 
     def getTransformOffset(self):
@@ -645,13 +646,13 @@ class QwtPlotImage(QwtPlotItem):
               self.Qimage.setPixel(i,j,value)
             else:
               if HAS_TIMBA:
-               _dprint(2, "*************************************");
-               _dprint(2, "colre: ", colre);
-               _dprint(2, "colim: ", colim);
-               _dprint(2, "real : ", real_image[i,j]);
-               _dprint(2, "imag : ", imag_image[i,j]);
-               _dprint(2, "Ncol: ", Ncol);
-               _dprint(2, "*************************************");
+               dprint(2, "*************************************");
+               dprint(2, "colre: ", colre);
+               dprint(2, "colim: ", colim);
+               dprint(2, "real : ", real_image[i,j]);
+               dprint(2, "imag : ", imag_image[i,j]);
+               dprint(2, "Ncol: ", Ncol);
+               dprint(2, "*************************************");
         self.Qimage.mirror(0,1)
 
     def setData(self, data_array, xScale = None, yScale = None):
@@ -659,7 +660,7 @@ class QwtPlotImage(QwtPlotItem):
         self.complex = False
         shape = data_array.shape
         if HAS_TIMBA:
-          _dprint(3, 'array shape is ', shape)
+          dprint(3, 'array shape is ', shape)
         shape0 = shape[0]
         if data_array.dtype == numpy.complex64 or data_array.dtype == numpy.complex128:
           self.complex = True
@@ -670,21 +671,21 @@ class QwtPlotImage(QwtPlotItem):
             temp_scale = (xScale[0],xScale[1])
             self.plot.setAxisScale(QwtPlot.xBottom, *temp_scale)
             if HAS_TIMBA:
-             _dprint(3, 'xScale is ', xScale)
+             dprint(3, 'xScale is ', xScale)
         else:
             self.xMap = ImageScaler(0, shape0, 0, shape0 )
             self.xMap_draw = ImageScaler(0, shape0, 0, shape0 )
             self.plot.setAxisScale(QwtPlot.xBottom, 0, shape0)
         if yScale:
             if HAS_TIMBA:
-             _dprint(3, 'yScale is ', yScale)
-             _dprint(3, 'self.log_y_scale is ', self.log_y_scale)
+             dprint(3, 'yScale is ', yScale)
+             dprint(3, 'self.log_y_scale is ', self.log_y_scale)
 
             self.yMap = ImageScaler(0, shape[1]-1, yScale[0], yScale[1],self.log_y_scale)
             self.yMap_draw = ImageScaler(0, shape[1]-1, yScale[0], yScale[1],self.log_y_scale)
             temp_scale = (yScale[0],yScale[1])
             if HAS_TIMBA:
-             _dprint(3, 'Called setAxisScale(QwtPlot.yLeft) with ', temp_scale)
+             dprint(3, 'Called setAxisScale(QwtPlot.yLeft) with ', temp_scale)
             self.plot.setAxisScale(QwtPlot.yLeft, *temp_scale)
         else:
             self.yMap = ImageScaler(0, shape[1], 0, shape[1])
@@ -718,8 +719,8 @@ class QwtPlotImage(QwtPlotItem):
         if self.Qimage is None:
           return
 
-#       #_dprint(3, 'incoming x map ranges ',xMap.s1(), ' ', xMap.s2())
-#       #_dprint(3, 'incoming y map ranges ',yMap.s1(), ' ', yMap.s2())
+#       #dprint(3, 'incoming x map ranges ',xMap.s1(), ' ', xMap.s2())
+#       #dprint(3, 'incoming y map ranges ',yMap.s1(), ' ', yMap.s2())
 #       print 'incoming x map ranges ',xMap.s1(), ' ', xMap.s2()
 #       print 'incoming y map ranges ',yMap.s1(), ' ', yMap.s2()
 #       print 'incoming x map draw ranges ',self.xMap_draw.d1(), ' ', self.xMap_draw.d2()
@@ -730,7 +731,7 @@ class QwtPlotImage(QwtPlotItem):
         # calculate y1, y2
         y1 = y2 = self.Qimage.height()
         if HAS_TIMBA:
-         _dprint(3, 'image height ', self.Qimage.height())
+         dprint(3, 'image height ', self.Qimage.height())
 #        y1 = y2 = self.Qimage.height() - 1
 #       print 'starting image height ', y1
         y1 *= (self.yMap.d2() - self.yMap_draw.d2())
@@ -738,33 +739,33 @@ class QwtPlotImage(QwtPlotItem):
 #       y1 = max(0, int(y1-0.5))
         y1 = max(0, (y1-0.5))
         if HAS_TIMBA:
-          _dprint(3, 'float y1 ', y1)
+          dprint(3, 'float y1 ', y1)
         y1 = int(y1 + 0.5)
         y2 *= (self.yMap.d2() - self.yMap_draw.d1())
         y2 /= (self.yMap.d2() - self.yMap.d1())
         if HAS_TIMBA:
-         _dprint(3, 'float y2 ', y2)
+         dprint(3, 'float y2 ', y2)
 #       y2 = min(self.Qimage.height(), int(y2+0.5))
         y2 = min(self.Qimage.height(), (y2+0.5))
         y2 = int(y2)
         if HAS_TIMBA:
-         _dprint(3, 'int y1, y2 ', y1, ' ',y2)
+         dprint(3, 'int y1, y2 ', y1, ' ',y2)
         # calculate x1, x2 - these are OK
         x1 = x2 = self.Qimage.width() 
 #       print 'starting image width ', x1
         x1 *= (xMap.s1() - self.xMap.d1())
         x1 /= (self.xMap.d2() - self.xMap.d1())
         if HAS_TIMBA:
-         _dprint(3, 'float x1 ', x1)
+         dprint(3, 'float x1 ', x1)
 #       x1 = max(0, int(x1-0.5))
         x1 = max(0, int(x1))
         x2 *= (self.xMap_draw.d2() - self.xMap.d1())
         x2 /= (self.xMap.d2() - self.xMap.d1())
         if HAS_TIMBA:
-         _dprint(3, 'float x2 ', x2)
+         dprint(3, 'float x2 ', x2)
         x2 = min(self.Qimage.width(), int(x2+0.5))
         if HAS_TIMBA:
-         _dprint(3, 'int x1, x2 ', x1, ' ',x2)
+         dprint(3, 'int x1, x2 ', x1, ' ',x2)
         # copy
         xdelta = x2-x1
         ydelta = y2-y1
@@ -781,9 +782,11 @@ class QwtPlotImage(QwtPlotItem):
         else:
           image = self.Qimage.copy(x1, y1, xdelta, ydelta)
         # zoom
-        image = image.scaled(xMap.p2()-xMap.p1()+1, yMap.p1()-yMap.p2()+1)
+#       print('(int(xMap.p2()-xMap.p1())+1, int(yMap.p1()-yMap.p2())+1',int(xMap.p2()-xMap.p1())+1, int(yMap.p1()-yMap.p2()+1))
+        image = image.scaled(int(xMap.p2()-xMap.p1())+1, int(yMap.p1()-yMap.p2())+1)
         # draw
-        painter.drawImage(xMap.p1(), yMap.p2(), image)
+#       print('xMap.p1(), yMap.p2()',xMap.p1(), yMap.p2())
+        painter.drawImage(int(xMap.p1()), int(yMap.p2()), image)
 
     # drawImage()
 

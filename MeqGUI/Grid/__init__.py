@@ -35,6 +35,7 @@ from MeqGUI.Grid.Workspace import Workspace
 
 from MeqGUI.Grid.Debug import *
 
+from Timba.Meq import meqds
 
 
 class Error (RuntimeError):

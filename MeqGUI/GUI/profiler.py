@@ -30,6 +30,7 @@ from MeqGUI import Grid
 from MeqGUI.GUI.pixmaps import pixmaps
 from MeqGUI.GUI import app_proxy_gui
 from MeqGUI.GUI.treebrowser import StickyTreeWidgetItem
+from Timba.utils import PersistentCurrier
 from Timba.Meq import meqds
 
 import time
@@ -37,14 +38,17 @@ import math
 import copy
 import Timba.array
 
-from PyQt4.Qt import *
-from Kittens.widgets import PYSIGNAL
+from qtpy.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QWidget, QTreeWidget, QTreeWidgetItem, QToolBar, QLabel, QHeaderView
+
+from qtpy.QtCore import Qt, QSize, QObject, Signal
 
 _dbg = verbosity(0,name='profiler');
 _dprint = _dbg.dprint;
 _dprintf = _dbg.dprintf;
 
 class Profiler (PersistentCurrier):
+  collecting = Signal()
+  collected = Signal()
   
   def __init__ (self,parent,name):
     self._wtop = wtop = QWidget(parent);
@@ -120,10 +124,12 @@ class Profiler (PersistentCurrier):
     self._tw.setRootIsDecorated(True);
     self._tw.setAllColumnsShowFocus(True);
     self._tw.setSortingEnabled(True);
-    self._tw.header().setResizeMode(QHeaderView.ResizeToContents);
-    self._tw.header().setMovable(False);
+# ResizeToContents, setMovable available in PyQt5? 
+# BH_FIX_ME
+#   self._tw.header().setResizeMode(QHeaderView.ResizeToContents);
+#   self._tw.header().setMovable(False);
     self._tw.header().setDefaultAlignment(Qt.AlignRight);
-    QObject.connect(self._tw,SIGNAL('itemExpanded(QTreeWidgetItem*)'),self._expand_item);
+    self._tw.itemExpanded[QTreeWidgetItem].connect(self._expand_item)
 #    for col in range(1,self._tw.columns()):
 #      self._tw.setColumnAlignment(col,Qt.AlignRight);
     
@@ -152,6 +158,8 @@ class Profiler (PersistentCurrier):
       return res.__iadd__(other);
     
   class NodeStatEntry (StatEntry):
+    collected = Signal();
+    collecting = Signal();
     __slots__ = ( "classname" );
     def __init__ (self,node):
       Profiler.StatEntry.__init__(self,node.name,node.profiling_stats,node.cache_stats);
@@ -165,7 +173,7 @@ class Profiler (PersistentCurrier):
     self.clear();
     # build internal list of by-class stats
     self._stats = {};
-    for ni,node in meqds.nodelist.items():
+    for ni,node in list(meqds.nodelist.items()):
       self._stats[ni] = self.NodeStatEntry(node);
     # populate profiler view
     if self._stats:
@@ -189,9 +197,11 @@ class Profiler (PersistentCurrier):
       self._appgui.log_message("forest is empty, no profiling available");
     
     # generate signal
-    self.wtop().emit(SIGNAL("collected"));
+    self.wtop().collected.emit()
     
   class StatItem (QTreeWidgetItem):
+    collecting = Signal()
+
     def __init__(self,parent,name,name2,se):
       QTreeWidgetItem.__init__(self,parent,[str(name),str(name2)]);
       # populate item content
@@ -232,7 +242,7 @@ class Profiler (PersistentCurrier):
       
   def _summarize_stats (self,keyfunc,stats):
     sums = {};
-    for se in stats.values():
+    for se in list(stats.values()):
       key = keyfunc(se);
       try: sums[key] += se;
       except KeyError:
@@ -243,7 +253,7 @@ class Profiler (PersistentCurrier):
   def _generate_summary_stats (self,keyfunc,parent_item):
     # generate summary stats using the supplied key-function
     sums = self._summarize_stats(keyfunc,self._stats);
-    for key,se in sums.items():
+    for key,se in list(sums.items()):
       self.StatItem(parent_item,str(key),se.count,se);
         
   def _generate_node_items (self,nodelist,parent_item):
@@ -309,7 +319,7 @@ class Profiler (PersistentCurrier):
     self._tw.clear();
 
   def collect_stats (self):
-    self.wtop().emit(SIGNAL("collecting"));
+    self.wtop().collecting.emit()
     self._appgui.log_message("collecting profiling stats, please wait");
     self.clear();
     self._qa_collect.setEnabled(False);
@@ -320,3 +330,17 @@ class Profiler (PersistentCurrier):
     self._qa_collect.setEnabled(True);
     self._appgui.log_message("resetting profiling stats");
     meqds.mqs().meq('Reset.Profiling.Stats',record(),wait=False);
+
+def main(args):
+  app = QApplication(sys.argv)
+  print('app initialized')
+  demo = Profiler(parent=None,name='abc')
+  print('demo initialized')
+# demo.show()
+  print('demo showing')
+  app.exec_()
+
+# Admire
+if __name__ == '__main__':
+    main(sys.argv)
+

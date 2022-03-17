@@ -70,9 +70,9 @@
 # and embedding_in_qt4.py
 
 # modules that are imported
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+
+
+
 
 from Timba.dmi import *
 from Timba import utils
@@ -83,10 +83,11 @@ from MeqGUI.GUI import widgets
 from MeqGUI.GUI.browsers import *
 from MeqGUI import Grid
 
-from PyQt4 import Qt
+from qtpy.QtCore import Qt, QSize
+from qtpy.QtWidgets import QApplication, QMenu, QMainWindow, QVBoxLayout, QSizePolicy
 
-from .ResultsRange_qt4 import *
-from .BufferSizeDialog_qt4 import *
+from ResultsRange_qt5 import *
+from BufferSizeDialog_qt5 import *
 
 from numpy import arange, sin, cos, pi
 import os, sys
@@ -120,16 +121,16 @@ if has_pylab:
 #    self.reparent(parent, QPoint(0, 0))
 #    self.setParent(Qt.QWidget())
      FigureCanvas.setSizePolicy(self,
-                                Qt.QSizePolicy.Expanding,
-                                Qt.QSizePolicy.Expanding)
+                                QSizePolicy.Expanding,
+                                QSizePolicy.Expanding)
      FigureCanvas.updateGeometry(self)
 
    def sizeHint(self):
      w, h = self.get_width_height()
-     return Qt.QSize(w, h)
+     return QSize(w, h)
 
    def minimumSizeHint(self):
-     return Qt.QSize(10, 10)
+     return QSize(10, 10)
 
    # The following method is adapted from 
    # matplotlib/examples/pythonic_matplotlib.py
@@ -365,7 +366,7 @@ class PylabPlotter(GriddedPlugin):
       self._pylab_plotter.show()
     if self._toolbar is None:
       self._toolbar = NavigationToolbar(self._pylab_plotter, self.layout_parent)
-      self._toolbar.setSizePolicy(Qt.QSizePolicy.Expanding,Qt.QSizePolicy.Fixed)
+      self._toolbar.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed)
       self.layout.addWidget(self._toolbar,0,0)
       self._toolbar.show()
     self._pylab_plotter.make_plot(pylab_record)
@@ -397,7 +398,7 @@ class PylabPlotter(GriddedPlugin):
       self.results_selector = ResultsRange(self.layout_parent)
       self.results_selector.setMaxValue(self.max_list_length)
       self.results_selector.set_offset_index(0)
-      self.results_selector.setSizePolicy(Qt.QSizePolicy.Expanding,Qt.QSizePolicy.Minimum)
+      self.results_selector.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Minimum)
       self.layout.addWidget(self.results_selector,2,0)
       self.results_selector.show()
       QObject.connect(self.results_selector, PYSIGNAL('result_index'), self.replay_data)
@@ -416,26 +417,26 @@ Grid.Services.registerViewer(meqds.NodeClass(),PylabPlotter,priority=50)
 if has_pylab:
   class ApplicationWindow(QMainWindow):
     def __init__(self):
-        Qt.QMainWindow.__init__(self, None)
+        QMainWindow.__init__(self, None)
 #                            "application main window",
 #                            Qt.WType_TopLevel | Qt.WDestructiveClose)
 
-        self.file_menu = Qt.QMenu('&File',self)
-        self.file_menu.addAction('&Quit', self.fileQuit, Qt.Qt.CTRL + Qt.Qt.Key_Q)
+        self.file_menu = QMenu('&File',self)
+        self.file_menu.addAction('&Quit', self.fileQuit, Qt.CTRL + Qt.Key_Q)
         self.menuBar().addMenu(self.file_menu)
 
-        self.help_menu = Qt.QMenu('&Help', self)
+        self.help_menu = QMenu('&Help', self)
         self.menuBar().addSeparator()
         self.menuBar().addMenu(self.help_menu)
 
         self.help_menu.addAction('&About', self.about)
 
-        self.main_widget = Qt.QWidget(self)
+        self.main_widget = QWidget(self)
 
-        l = Qt.QVBoxLayout(self.main_widget)
+        l = QVBoxLayout(self.main_widget)
         sc = MyPylabPlotter(self.main_widget, dpi=100)
         toolbar = NavigationToolbar(sc, self.main_widget)
-        toolbar.setSizePolicy(Qt.QSizePolicy.Expanding,Qt.QSizePolicy.Fixed)
+        toolbar.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed)
         l.addWidget(sc)
         l.addWidget(toolbar)
 
@@ -448,7 +449,8 @@ if has_pylab:
         sc.demo_pylab_figure()
 
     def fileQuit(self):
-        qApp.exit(0)
+        exit(0)
+#       sys.exit(app.exec_())
 
     def closeEvent(self, ce):
         self.fileQuit()
@@ -470,7 +472,7 @@ modified versions may be distributed without limitation."""
 
 def main( argv ):
   if has_pylab:
-    app = Qt.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     aw = ApplicationWindow()
 #   app.setMainWidget(aw)
     aw.show()

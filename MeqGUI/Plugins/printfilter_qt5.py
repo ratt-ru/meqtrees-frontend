@@ -25,18 +25,18 @@
 #
 
 # this code is taken directly from the PyQwt BodeDemo.py example
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-
-from qwt.qt.QtCore import Qt,  QSize
-from qwt.qt.QtGui import QColor,  QPixmap, QFont,  QIcon
-from qwt.qt.QtGui import QMainWindow,  QWidget,  QToolBar,  QToolButton,  QHBoxLayout,  QLabel,  QApplication
-from qwt.qt.QtGui import QPrintDialog, QPrinter
 
 
 
-class PrintFilter(Qwt.QwtPlotPrintFilter):
+
+from qtpy.QtWidgets import QMainWindow,  QWidget,  QToolBar,  QToolButton,  QHBoxLayout,  QLabel,  QApplication
+from qtpy.QtCore import Qt,  QSize
+from qtpy.QtGui import QColor,  QPixmap, QFont,  QIcon
+from qtpy.QtPrintSupport import QPrinter, QPrintDialog
+from qwt import QwtPlotPrintFilter
+
+
+class PrintFilter(QwtPlotPrintFilter):
     def __init__(self):
         QwtPlotPrintFilter.__init__(self)
 
